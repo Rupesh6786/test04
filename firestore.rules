@@ -1,0 +1,82 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    // Checks if the requesting user's UID is in the list of admin UIDs.
+    function isAdmin() {
+      return request.auth != null && request.auth.uid in ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"];
+    }
+
+    // Checks if a user is authenticated.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Checks if the authenticated user is the owner of the document,
+    // by comparing their UID with the userId from the document path.
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+
+    // --- Public Collections ---
+    // Products can be read by anyone, but only created, updated, or deleted by admins.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Services can be read by anyone, but only created, updated, or deleted by admins.
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    
+    // --- Users Collection & Subcollections ---
+    match /users/{userId} {
+      // CREATE: A user can create their own user document upon registration.
+      // The document ID must match their UID.
+      allow create: if isOwner(userId);
+
+      // READ: Users can get their own profile. Admins can get any profile and list all users.
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+
+      // UPDATE: Users can update their own profile (e.g., displayName).
+      allow update: if isOwner(userId);
+
+      // DELETE: Disallowed to prevent accidental data loss.
+      allow delete: if false;
+    }
+
+    match /users/{userId}/addresses/{addressId} {
+      // A user can fully manage their own addresses. Admins cannot access them directly.
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /users/{userId}/appointments/{appointmentId} {
+      // CREATE: A user can create their own appointments.
+      allow create: if isOwner(userId);
+
+      // READ: A user can read their own appointments. An admin can read any appointment.
+      allow read: if isOwner(userId) || isAdmin();
+
+      // UPDATE: A user can update their own appointment (e.g., for payment). 
+      // An admin can update any appointment (e.g., to change its status).
+      allow update: if isOwner(userId) || isAdmin();
+
+      // DELETE: Disallowed to prevent accidental data loss.
+      allow delete: if false;
+    }
+    
+    // This separate rule is required for the admin dashboard and appointments page 
+    // to perform a 'collectionGroup' query across all users' appointments.
+    match /{path=**}/appointments/{appointmentId} {
+      allow get, list: if isAdmin();
+    }
+  }
+}

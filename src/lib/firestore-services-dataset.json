@@ -1,0 +1,80 @@
+
+[
+  {
+    "id": "1",
+    "name": "Filter Cleaning",
+    "description": "Thorough cleaning of AC filters for improved air quality and efficiency.",
+    "priceRange": "₹300 - ₹500",
+    "icon": "Wind"
+  },
+  {
+    "id": "2",
+    "name": "Dry Service",
+    "description": "Comprehensive dry servicing including cleaning of coils and outer unit.",
+    "priceRange": "₹500 - ₹800",
+    "icon": "ThermometerSun"
+  },
+  {
+    "id": "3",
+    "name": "Gas Charging",
+    "description": "AC refrigerant gas top-up or full recharge by certified technicians.",
+    "priceRange": "₹1500 - ₹3000",
+    "icon": "Pipette"
+  },
+  {
+    "id": "4",
+    "name": "AC Fitting / Installation",
+    "description": "Professional fitting and installation of new or used AC units.",
+    "priceRange": "₹1000 - ₹2000",
+    "icon": "Settings"
+  },
+  {
+    "id": "5",
+    "name": "Dismantling",
+    "description": "Safe and careful dismantling of existing AC units for relocation or disposal.",
+    "priceRange": "₹500 - ₹1000",
+    "icon": "Unplug"
+  },
+  {
+    "id": "6",
+    "name": "Z Service (Jet Pump Service)",
+    "description": "Intensive cleaning using a high-pressure jet pump for deep-seated dirt.",
+    "priceRange": "₹800 - ₹1200",
+    "icon": "Wrench"
+  },
+  {
+    "id": "7",
+    "name": "Piping",
+    "description": "Copper piping work for AC installations and extensions.",
+    "priceRange": "Varies by length",
+    "icon": "Pipette"
+  },
+  {
+    "id": "8",
+    "name": "PCB Repair",
+    "description": "Expert repair services for AC Printed Circuit Boards (PCBs).",
+    "priceRange": "Varies",
+    "icon": "Cpu"
+  },
+  {
+    "id": "9",
+    "name": "Compressor Replacement",
+    "description": "Replacement of faulty AC compressors with quality parts.",
+    "priceRange": "Varies",
+    "icon": "Replace"
+  },
+  {
+    "id": "10",
+    "name": "AC Installation",
+    "description": "Standard installation services for all types of AC units, ensuring optimal performance.",
+    "priceRange": "₹1200 - ₹2500",
+    "icon": "PackagePlus"
+  },
+  {
+    "id": "11",
+    "name": "Motor Replacement",
+    "description": "Replacement of blower motors, fan motors, and other AC motors.",
+    "priceRange": "Varies",
+    "icon": "Cog"
+  }
+]

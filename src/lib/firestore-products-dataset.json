@@ -1,0 +1,63 @@
+
+[
+  {
+    "id": "prod_1",
+    "brand": "CoolWave",
+    "model": "X2000",
+    "price": 25000,
+    "capacity": "1.5 Ton",
+    "stock": 10,
+    "condition": "Used",
+    "imageUrl": "https://placehold.co/600x400.png",
+    "description": "Reliable Used CoolWave X2000 AC unit, 1.5 Ton capacity. Features efficient inverter technology, smart controls for convenience, and air purification for healthier air. An excellent choice for dependable cooling.",
+    "category": "Split AC",
+    "warranty": "1 Year Parts, 5 Years Compressor",
+    "features": "Inverter Technology, Smart Controls, Air Purification",
+    "aiHint": "modern air conditioner"
+  },
+  {
+    "id": "prod_2",
+    "brand": "ArcticBlast",
+    "model": "ProSilent",
+    "price": 18000,
+    "capacity": "1.0 Ton",
+    "stock": 15,
+    "condition": "Used",
+    "imageUrl": "https://placehold.co/600x400.png",
+    "description": "Efficient Used ArcticBlast ProSilent, 1.0 Ton AC unit. Known for its quiet operation, energy-saving mode, and turbo cool function for rapid cooling. Perfect for bedrooms or small offices.",
+    "category": "Window AC",
+    "warranty": "6 Months Seller Warranty",
+    "features": "Quiet Operation, Energy Saver, Turbo Cool",
+    "aiHint": "compact air conditioner"
+  },
+  {
+    "id": "prod_3",
+    "brand": "FrostFlow",
+    "model": "EcoSmart",
+    "price": 32000,
+    "capacity": "2.0 Ton",
+    "stock": 7,
+    "condition": "New",
+    "imageUrl": "https://placehold.co/600x400.png",
+    "description": "Brand New FrostFlow EcoSmart, a powerful 2.0 Ton AC. Features an eco-friendly mode, Wi-Fi enabled for smart home integration, and an effective dehumidifier. Ideal for cooling larger spaces efficiently.",
+    "category": "Split AC",
+    "warranty": "1 Year Manufacturer Warranty",
+    "features": "Eco Mode, Wi-Fi Enabled, Dehumidifier",
+    "aiHint": "large air conditioner"
+  },
+  {
+    "id": "prod_4",
+    "brand": "ChillMaster",
+    "model": "CompactCool",
+    "price": 15000,
+    "capacity": "0.8 Ton",
+    "stock": 12,
+    "condition": "Used",
+    "imageUrl": "https://placehold.co/600x400.png",
+    "description": "Versatile Used ChillMaster CompactCool, 0.8 Ton AC. This portable unit is easy to install and comes with a remote control for convenience. Great for personal cooling in smaller rooms or as a supplementary unit.",
+    "category": "Portable AC",
+    "warranty": "3 Months Warranty",
+    "features": "Portable, Easy Install, Remote Control",
+    "aiHint": "window air conditioner"
+  }
+]

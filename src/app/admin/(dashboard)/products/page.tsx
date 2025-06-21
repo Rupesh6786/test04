@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import {
   Table,
@@ -51,12 +52,14 @@ import type { Product } from "@/types";
 import { ProductFormModal } from "@/components/admin/ProductFormModal";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminProductsPage() {
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -131,14 +134,25 @@ export default function AdminProductsPage() {
     }
   };
 
+  const categories = useMemo(() => {
+    if (!products) return [];
+    const allCategories = products.map(p => p.category).filter((c): c is string => !!c);
+    return [...new Set(allCategories)];
+  }, [products]);
+  
   const filteredProducts = products.filter(product => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+
+    const categoryMatches = categoryFilter === 'all' || product.category?.toLowerCase() === categoryFilter.toLowerCase();
+    
+    const searchMatches = searchTerm === "" || (
       product.brand.toLowerCase().includes(searchLower) ||
       product.model.toLowerCase().includes(searchLower) ||
       (product.category && product.category.toLowerCase().includes(searchLower)) ||
       product.condition.toLowerCase().includes(searchLower)
     );
+    
+    return categoryMatches && searchMatches;
   });
   
   const getConditionBadge = (condition: 'New' | 'Used') => {
@@ -165,14 +179,27 @@ export default function AdminProductsPage() {
           <CardDescription>
             View, add, edit, or delete AC units from your inventory.
           </CardDescription>
-          <div className="mt-4 relative">
-             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search (Brand, Model, Category...)"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full max-w-md pl-10"
-            />
+          <div className="mt-4 flex flex-col sm:flex-row gap-4">
+             <div className="relative flex-grow">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search (Brand, Model, Category...)"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10"
+                />
+             </div>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(category => (
+                        <SelectItem key={category} value={category.toLowerCase()}>{category}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -185,10 +212,10 @@ export default function AdminProductsPage() {
              <div className="text-center py-20">
                 <Package className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-lg font-medium text-foreground">
-                  {searchTerm ? "No products match search" : "No products in inventory"}
+                  {searchTerm || categoryFilter !== 'all' ? "No products match search" : "No products in inventory"}
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {searchTerm ? "Try different keywords." : "Click 'Add New Product' to start."}
+                  {searchTerm || categoryFilter !== 'all' ? "Try different keywords or filters." : "Click 'Add New Product' to start."}
                 </p>
              </div>
           ) : (

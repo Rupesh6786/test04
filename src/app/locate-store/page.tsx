@@ -5,8 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function LocateStorePage() {
   const storeName = "Classic Solution";
   const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
+  
+  // This is the Firebase Web API key, safe to use on the client for this purpose.
+  // Ensure the Google Maps Embed API is enabled in your Google Cloud project.
+  const API_KEY = "AIzaSyDEsi2at9uEvSycslN4-6rH6s8WbLJQjWs";
   const mapsQuery = encodeURIComponent(`${storeName}, ${storeAddress}`);
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+  
+  // Use the Google Maps Embed API URL which is designed for iframes
+  const mapsEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=${API_KEY}&q=${mapsQuery}`;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,11 +55,11 @@ export default function LocateStorePage() {
 
         <div className="relative aspect-video bg-muted rounded-lg shadow hover:shadow-md transition-shadow">
           <iframe
-            src={mapsUrl}
+            src={mapsEmbedUrl}
             width="100%"
             height="100%"
             style={{ border: 0 }}
-            allowFullScreen={false}
+            allowFullScreen={true}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             title="Google Map of Classic Solution"

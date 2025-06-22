@@ -33,7 +33,7 @@ export default function HomePage() {
     <>
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/20 via-background to-background py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://placehold.co/1920x1080/87CEEB/4682B4?text=')] bg-repeat"></div>
+        <div className="absolute inset-0 opacity-10 bg-[url('https://placehold.co/1920x1080/87CEEB/4682B4?text='')] bg-repeat"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="text-center md:text-left">
@@ -52,8 +52,8 @@ export default function HomePage() {
             <div className="relative h-80 md:h-[450px] group">
                <div className="absolute inset-0 bg-primary/30 rounded-lg transform -rotate-3 group-hover:rotate-0 transition-transform duration-300"></div>
                 <Image
-                  src="https://placehold.co/600x450.png"
-                  // src="https://i.ibb.co/N2TRst74/home-page.png"
+                  // src="https://placehold.co/600x450.png"
+                  src="/hero-section.jpg"
                   alt="Actress impressed by AC unit"
                   data-ai-hint="woman air conditioner"
                   width={600}

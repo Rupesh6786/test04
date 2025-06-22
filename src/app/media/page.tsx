@@ -27,8 +27,8 @@ const mediaItems: MediaItem[] = [
   {
     id: '3',
     type: 'video',
-    src: 'https://www.youtube.com/embed/r_2n4T2f-i4',
-    thumbnail: 'https://img.youtube.com/vi/r_2n4T2f-i4/hqdefault.jpg',
+    src: 'https://www.youtube.com/embed/s6NHxfKUkUo',
+    thumbnail: 'https://img.youtube.com/vi/s6NHxfKUkUo/hqdefault.jpg',
     title: 'AC Filter Cleaning Tutorial',
     description: 'Learn how to clean your AC filters for better performance.',
     aiHint: 'technician ac repair',

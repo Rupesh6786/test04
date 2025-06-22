@@ -97,6 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       const isUserActive = await checkUserStatus(user);
       if (!isUserActive) {
+          // checkUserStatus already shows a toast and signs out.
           throw new Error('Account not active');
       }
 
@@ -106,20 +107,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push('/admin');
       }
     } catch (error) {
+      // Don't show toast for manually thrown 'Account not active' error
       if ((error as Error).message === 'Account not active') return;
 
       const authError = error as AuthError;
       console.error("Firebase login error:", authError.code, authError.message);
       
       let description = "An unknown error occurred. Please try again.";
-      if (authError.code === 'auth/invalid-credential' || authError.code === 'auth/wrong-password' || authError.code === 'auth/user-not-found') {
-        description = "Incorrect email or password. Please check your credentials and try again.";
-      } else if (authError.message) {
-        description = authError.message;
+      switch (authError.code) {
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
+          description = "Incorrect email or password. Please check your credentials and try again.";
+          break;
+        case 'auth/user-disabled':
+          description = "This user account has been disabled by an administrator.";
+          break;
+        case 'auth/too-many-requests':
+          description = "Access to this account has been temporarily disabled due to many failed login attempts. You can reset your password or try again later.";
+          break;
+        case 'auth/operation-not-allowed':
+          description = "Email/Password sign-in is not enabled for this app. Please contact support.";
+          break;
+        default:
+          description = authError.message || description;
+          break;
       }
 
       toast({ title: 'Login Failed', description, variant: 'destructive' });
-      throw authError;
+      throw authError; // Re-throw to be caught by the modal if needed
     }
   };
 

@@ -1,18 +1,15 @@
 
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, Navigation } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function LocateStorePage() {
   const storeName = "Classic Solution";
   const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
   
-  // This is the Firebase Web API key, safe to use on the client for this purpose.
-  // Ensure the Google Maps Embed API is enabled in your Google Cloud project.
-  const API_KEY = "AIzaSyDEsi2at9uEvSycslN4-6rH6s8WbLJQjWs";
-  const mapsQuery = encodeURIComponent(`${storeName}, ${storeAddress}`);
-  
-  // Use the Google Maps Embed API URL which is designed for iframes
-  const mapsEmbedUrl = `https://www.google.com/maps/embed/v1/place?key=${API_KEY}&q=${mapsQuery}`;
+  // This URL opens the address directly in Google Maps for navigation.
+  // It does not require an API key and avoids embedding issues.
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storeAddress)}`;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -53,19 +50,24 @@ export default function LocateStorePage() {
           </CardContent>
         </Card>
 
-        <div className="relative aspect-video bg-muted rounded-lg shadow hover:shadow-md transition-shadow">
-          <iframe
-            src={mapsEmbedUrl}
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen={true}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Google Map of Classic Solution"
-            className="rounded-lg"
-          ></iframe>
-        </div>
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <CardTitle className="font-headline text-xl text-primary flex items-center">
+              <Navigation className="w-5 h-5 mr-2" /> Click to Navigate
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+              <p className="text-muted-foreground mb-4">
+                Get directions to our store with a single click. This will open Google Maps in a new tab for easy navigation.
+              </p>
+              <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="block">
+                <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                  Open in Google Maps
+                </Button>
+              </a>
+          </CardContent>
+        </Card>
+
       </div>
 
        <div className="mt-16 text-center">

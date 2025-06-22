@@ -1,7 +1,6 @@
 
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
 
 export default function LocateStorePage() {
   const storeName = "Classic Solution";
@@ -48,14 +47,18 @@ export default function LocateStorePage() {
           </CardContent>
         </Card>
 
-        <div className="relative aspect-video bg-muted rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
-          <Image
-            src="/images/store-front.png"
-            alt="Classic Solution store front"
-            data-ai-hint="store front"
-            fill
-            className="object-cover"
-          />
+        <div className="relative aspect-video bg-muted rounded-lg shadow hover:shadow-md transition-shadow">
+          <iframe
+            src={mapsUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen={false}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Google Map of Classic Solution"
+            className="rounded-lg"
+          ></iframe>
         </div>
       </div>
 

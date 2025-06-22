@@ -60,9 +60,6 @@ const timeSlots = [
   "04:00 PM - 05:00 PM",
 ];
 
-const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
-
-
 interface ServiceBookingFormProps {
   availableServices: Service[];
   initialServiceType?: string;
@@ -280,9 +277,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
                 <RadioGroup
                   onValueChange={(value) => {
                     setSelectedAddressId(value);
-                    if (value === 'store') {
-                      field.onChange(storeAddress);
-                    } else if (value === 'new') {
+                    if (value === 'new') {
                       field.onChange('');
                     } else {
                       const selected = userAddresses.find(a => a.id === value);
@@ -308,10 +303,6 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
                     </FormItem>
                   ))}
                   <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
-                    <FormControl><RadioGroupItem value="store" /></FormControl>
-                    <Label className="font-normal flex-grow cursor-pointer">Service at Store Location</Label>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
                     <FormControl><RadioGroupItem value="new" /></FormControl>
                     <Label className="font-normal flex-grow cursor-pointer">Use a new/different address</Label>
                   </FormItem>
@@ -321,7 +312,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
               {(selectedAddressId === 'new' || !isLoggedIn) && (
                 <FormControl>
                   <Input
-                    placeholder="Enter your full service address"
+                    placeholder="e.g., A-123, Rose Villa, MG Road, Mumbai"
                     {...field}
                     disabled={isSubmitting}
                     className="mt-2"

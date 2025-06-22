@@ -8,7 +8,7 @@ const mediaItems: MediaItem[] = [
   {
     id: '1',
     type: 'video',
-    src: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Placeholder video
+    src: 'https://www.youtube.com/embed/bgo1nBq213I',
     thumbnail: 'https://placehold.co/600x400.png',
     title: 'AC Installation Demo',
     description: 'Watch our experts install an AC unit efficiently.',
@@ -25,7 +25,7 @@ const mediaItems: MediaItem[] = [
   {
     id: '3',
     type: 'video',
-    src: 'https://www.youtube.com/embed/ টেকনিশিয়ান ', // Placeholder video with non-latin characters for testing
+    src: 'https://www.youtube.com/embed/r_2n4T2f-i4',
     thumbnail: 'https://placehold.co/600x400.png',
     title: 'AC Filter Cleaning Tutorial',
     description: 'Learn how to clean your AC filters for better performance.',
@@ -50,7 +50,7 @@ const mediaItems: MediaItem[] = [
   {
     id: '6',
     type: 'video',
-    src: 'https://www.youtube.com/embed/video-id-placeholder',
+    src: 'https://www.youtube.com/embed/I-D3_r5E4bI',
     thumbnail: 'https://placehold.co/600x400.png',
     title: 'Why Choose Classic-Solution?',
     description: 'Hear from our founder about our commitment to quality.',
@@ -82,9 +82,8 @@ export default function MediaPage() {
                       src={item.thumbnail || 'https://placehold.co/600x400.png'} // Fallback thumbnail
                       alt={item.title}
                       data-ai-hint={item.aiHint}
-                      layout="fill"
-                      objectFit="cover"
-                      className="group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <a 
                       href={item.src.startsWith('https://www.youtube.com/embed/') ? item.src : `https://www.youtube.com/watch?v=${item.src}`} 
@@ -101,9 +100,8 @@ export default function MediaPage() {
                     src={item.src}
                     alt={item.title}
                     data-ai-hint={item.aiHint}
-                    layout="fill"
-                    objectFit="cover"
-                    className="group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 )}
               </div>

@@ -8,7 +8,7 @@ import { Award, Users, CircleDollarSign, CalendarCheck, CheckCircle } from 'luci
 const whyChooseUsItems = [
   {
     icon: Award,
-    title: '12+ Years Experience',
+    title: '16+ Years Experience',
     description: 'Decades of expertise in AC sales and services, ensuring quality and reliability.',
   },
   {
@@ -33,7 +33,7 @@ export default function HomePage() {
     <>
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/20 via-background to-background py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://placehold.co/1920x1080/87CEEB/4682B4?text='')] bg-repeat"></div>
+        <div className="absolute inset-0 opacity-10 bg-[url('https://placehold.co/1920x1080/87CEEB/4682B4?text=')] bg-repeat"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="text-center md:text-left">

@@ -1,6 +1,7 @@
 
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Image from 'next/image';
 
 export default function LocateStorePage() {
   const storeName = "Classic Solution";
@@ -47,19 +48,15 @@ export default function LocateStorePage() {
           </CardContent>
         </Card>
 
-        <a 
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Get directions to ${storeName}`}
-          className="block aspect-video bg-muted rounded-lg flex items-center justify-center text-muted-foreground shadow hover:shadow-md transition-shadow"
-        >
-            <div className="text-center p-4">
-                <MapPin size={48} className="mx-auto mb-2 text-primary"/>
-                <p className="font-semibold text-foreground">Click to Navigate</p>
-                <p className="text-sm">{storeAddress}</p>
-            </div>
-        </a>
+        <div className="relative aspect-video bg-muted rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
+          <Image
+            src="/images/store-front.png"
+            alt="Classic Solution store front"
+            data-ai-hint="store front"
+            fill
+            className="object-cover"
+          />
+        </div>
       </div>
 
        <div className="mt-16 text-center">

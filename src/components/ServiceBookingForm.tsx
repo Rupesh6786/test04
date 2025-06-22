@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,17 +23,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Home, Briefcase, MapPin } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import type { Service } from "@/types";
+import type { Service, Address } from "@/types";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, getDoc, query, onSnapshot } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Label } from "./ui/label";
 
 const serviceBookingSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -57,6 +60,9 @@ const timeSlots = [
   "04:00 PM - 05:00 PM",
 ];
 
+const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
+
+
 interface ServiceBookingFormProps {
   availableServices: Service[];
   initialServiceType?: string;
@@ -67,6 +73,10 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  
+  const [userAddresses, setUserAddresses] = useState<Address[]>([]);
+  const [isLoadingUserDetails, setIsLoadingUserDetails] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('new');
 
   const form = useForm<ServiceBookingFormValues>({
     resolver: zodResolver(serviceBookingSchema),
@@ -82,15 +92,59 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
 
   useEffect(() => {
     if (currentUser) {
-      form.reset({
-        ...form.getValues(), 
-        name: currentUser.displayName || form.getValues().name || "",
-        email: currentUser.email || form.getValues().email || "",
-        serviceType: initialServiceType || form.getValues().serviceType || "", 
+      setIsLoadingUserDetails(true);
+      const fetchUserDetails = async () => {
+        try {
+          // Fetch user document for phone number
+          const userDocRef = doc(db, "users", currentUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            form.reset({
+              ...form.getValues(),
+              name: userData.displayName || currentUser.displayName || "",
+              email: userData.email || currentUser.email || "",
+              phone: userData.phone || ""
+            })
+          }
+
+          // Fetch user addresses
+          const addressesColRef = collection(db, "users", currentUser.uid, "addresses");
+          const addressesQuery = query(addressesColRef);
+          const unsubscribe = onSnapshot(addressesQuery, (snapshot) => {
+            const fetchedAddresses: Address[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Address));
+            setUserAddresses(fetchedAddresses);
+            const defaultAddress = fetchedAddresses.find(a => a.isDefault);
+            if (defaultAddress) {
+              setSelectedAddressId(defaultAddress.id);
+              const fullAddress = `${defaultAddress.line1}${defaultAddress.line2 ? ', ' + defaultAddress.line2 : ''}, ${defaultAddress.city}, ${defaultAddress.state} ${defaultAddress.zipCode}`;
+              form.setValue('address', fullAddress);
+            } else {
+              setSelectedAddressId('new');
+              form.setValue('address', '');
+            }
+          });
+          // Note: This onSnapshot listener will remain active for the component's lifetime.
+        } catch (error) {
+          console.error("Error fetching user details for form", error);
+          toast({ title: "Error", description: "Could not load your saved details.", variant: "destructive" });
+        } finally {
+          setIsLoadingUserDetails(false);
+        }
+      };
+      fetchUserDetails();
+    } else {
+       form.reset({
+        name: "",
+        phone: "", 
+        email: "",
+        serviceType: initialServiceType || "",
+        budget: "",
+        address: "",
       });
     }
-  }, [currentUser, form, initialServiceType]);
-
+  }, [currentUser, form, toast, initialServiceType]);
+  
   useEffect(() => {
     if (initialServiceType) {
       form.setValue("serviceType", initialServiceType, { shouldValidate: true });
@@ -149,6 +203,14 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
     }
   }
 
+  const getAddressIcon = (type: Address['type']) => {
+    switch (type) {
+      case 'Home': return <Home className="w-4 h-4 text-primary mr-2 shrink-0" />;
+      case 'Work': return <Briefcase className="w-4 h-4 text-primary mr-2 shrink-0" />;
+      default: return <MapPin className="w-4 h-4 text-primary mr-2 shrink-0" />;
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -160,7 +222,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
               <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} disabled={isSubmitting} />
+                  <Input placeholder="John Doe" {...field} disabled={isSubmitting || isLoadingUserDetails} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -173,7 +235,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="+911234567890" {...field} disabled={isSubmitting} />
+                  <Input type="tel" placeholder="+911234567890" {...field} disabled={isSubmitting || isLoadingUserDetails} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -187,25 +249,77 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
             <FormItem>
               <FormLabel>Email Address</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting} />
+                <Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting || isLoadingUserDetails} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Service Address</FormLabel>
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Service Address</FormLabel>
+              {isLoadingUserDetails && isLoggedIn && <div><Loader2 className="h-4 w-4 animate-spin"/></div>}
+              {!isLoadingUserDetails && isLoggedIn && (
+                <RadioGroup
+                  onValueChange={(value) => {
+                    setSelectedAddressId(value);
+                    if (value === 'store') {
+                      field.onChange(storeAddress);
+                    } else if (value === 'new') {
+                      field.onChange('');
+                    } else {
+                      const selected = userAddresses.find(a => a.id === value);
+                      if (selected) {
+                        const fullAddress = `${selected.line1}${selected.line2 ? ', ' + selected.line2 : ''}, ${selected.city}, ${selected.state} ${selected.zipCode}`;
+                        field.onChange(fullAddress);
+                      }
+                    }
+                  }}
+                  value={selectedAddressId}
+                  className="space-y-2"
+                >
+                  {userAddresses.map((addr) => (
+                    <FormItem key={addr.id} className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                      <FormControl><RadioGroupItem value={addr.id} /></FormControl>
+                      <Label htmlFor={addr.id} className="font-normal flex-grow cursor-pointer">
+                        <div className="flex items-center font-semibold mb-1">
+                          {getAddressIcon(addr.type)} {addr.type}
+                          {addr.isDefault && <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Default</span>}
+                        </div>
+                         <address className="not-italic text-sm text-muted-foreground">{addr.line1}, {addr.city}</address>
+                      </Label>
+                    </FormItem>
+                  ))}
+                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                    <FormControl><RadioGroupItem value="store" /></FormControl>
+                    <Label className="font-normal flex-grow cursor-pointer">Service at Store Location</Label>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0 p-3 border rounded-md has-[:checked]:border-primary">
+                    <FormControl><RadioGroupItem value="new" /></FormControl>
+                    <Label className="font-normal flex-grow cursor-pointer">Use a new/different address</Label>
+                  </FormItem>
+                </RadioGroup>
+              )}
+
+              {(selectedAddressId === 'new' || !isLoggedIn) && (
                 <FormControl>
-                  <Input placeholder="123 Main St, Anytown" {...field} disabled={isSubmitting} />
+                  <Input
+                    placeholder="Enter your full service address"
+                    {...field}
+                    disabled={isSubmitting}
+                    className="mt-2"
+                  />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <div className="grid md:grid-cols-2 gap-6">
           <FormField
             control={form.control}

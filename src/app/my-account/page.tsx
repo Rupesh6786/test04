@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"; 
 import { useAuth } from "@/contexts/AuthContext";
-import { Building2, ListChecks, UserCircle, LogOut, Loader2, PlusCircle, Pencil, Trash2, Home, Briefcase, MapPin, CalendarDays, Clock, CreditCard, Save, XCircle } from "lucide-react";
+import { Building2, ListChecks, UserCircle, LogOut, Loader2, PlusCircle, Pencil, Trash2, Home, Briefcase, MapPin, CalendarDays, Clock, CreditCard, Save, XCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import type { Address, Appointment } from "@/types";
+import type { Address, Appointment, User } from "@/types";
 import { db, auth } from "@/lib/firebase";
-import { collection, query, onSnapshot, Unsubscribe, doc, deleteDoc, updateDoc, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, query, onSnapshot, Unsubscribe, doc, deleteDoc, updateDoc, orderBy, serverTimestamp, getDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import {
   AlertDialog,
@@ -49,7 +49,9 @@ export default function MyAccountPage() {
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState(currentUser?.displayName || "");
+  const [newPhone, setNewPhone] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isUserDataLoading, setIsUserDataLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !isLoggedIn) {
@@ -60,9 +62,26 @@ export default function MyAccountPage() {
 
   useEffect(() => {
     if (currentUser) {
-        setNewDisplayName(currentUser.displayName || "");
+      setIsUserDataLoading(true);
+      const userDocRef = doc(db, "users", currentUser.uid);
+      getDoc(userDocRef).then(docSnap => {
+        if (docSnap.exists()) {
+          const userData = docSnap.data() as User;
+          setNewDisplayName(userData.displayName || currentUser.displayName || "");
+          setNewPhone(userData.phone || "");
+        } else {
+          setNewDisplayName(currentUser.displayName || "");
+          setNewPhone("");
+        }
+      }).catch(error => {
+        console.error("Error fetching user data:", error);
+        toast({ title: "Error", description: "Could not fetch profile details.", variant: "destructive" });
+      }).finally(() => {
+        setIsUserDataLoading(false);
+      });
     }
-  }, [currentUser]);
+  }, [currentUser, toast]);
+
 
   useEffect(() => {
     const scriptId = 'razorpay-checkout-script-myaccount';
@@ -255,15 +274,29 @@ export default function MyAccountPage() {
         toast({ title: "Invalid Name", description: "Display name must be at least 2 characters.", variant: "destructive"});
         return;
     }
+     if (newPhone && !/^\+?[1-9]\d{1,14}$/.test(newPhone)) {
+        toast({ title: "Invalid Phone Number", description: "Please enter a valid phone number including country code if necessary.", variant: "destructive"});
+        return;
+    }
+
 
     setIsSavingProfile(true);
     try {
-        // Update Firebase Auth profile
-        await updateProfile(auth.currentUser, { displayName: newDisplayName.trim() });
+        const updatePromises = [];
+
+        // Update Firebase Auth profile if name has changed
+        if (auth.currentUser.displayName !== newDisplayName.trim()) {
+            updatePromises.push(updateProfile(auth.currentUser, { displayName: newDisplayName.trim() }));
+        }
 
         // Update Firestore user document
         const userDocRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userDocRef, { displayName: newDisplayName.trim() });
+        updatePromises.push(updateDoc(userDocRef, { 
+            displayName: newDisplayName.trim(),
+            phone: newPhone.trim()
+        }));
+        
+        await Promise.all(updatePromises);
 
         toast({ title: "Profile Updated", description: "Your display name has been updated." });
         setIsEditingProfile(false);
@@ -359,13 +392,24 @@ export default function MyAccountPage() {
                             disabled={isSavingProfile}
                         />
                     </div>
+                    <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-muted-foreground mb-1">Phone Number</label>
+                        <Input 
+                            id="phone"
+                            type="tel"
+                            value={newPhone}
+                            onChange={(e) => setNewPhone(e.target.value)}
+                            placeholder="+911234567890"
+                            disabled={isSavingProfile}
+                        />
+                    </div>
                     <p className="text-sm"><strong>Email:</strong> {currentUser.email} (cannot be changed)</p>
                     <div className="flex space-x-2 mt-2">
                         <Button onClick={handleSaveProfile} disabled={isSavingProfile} size="sm">
                             {isSavingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
                             Save
                         </Button>
-                        <Button variant="outline" onClick={() => { setIsEditingProfile(false); setNewDisplayName(currentUser.displayName || ""); }} disabled={isSavingProfile} size="sm">
+                        <Button variant="outline" onClick={() => { setIsEditingProfile(false); }} disabled={isSavingProfile} size="sm">
                             <XCircle className="mr-2 h-4 w-4" />
                             Cancel
                         </Button>
@@ -373,10 +417,21 @@ export default function MyAccountPage() {
                 </div>
             ) : (
                 <>
-                    <p><strong>Name:</strong> {currentUser.displayName || "N/A"}</p>
-                    <p><strong>Email:</strong> {currentUser.email}</p>
-                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsEditingProfile(true)}>
-                        <Pencil className="mr-1 h-3 w-3" /> Edit Profile
+                    {isUserDataLoading ? (
+                        <div className="space-y-2">
+                            <div className="h-5 w-3/4 bg-muted rounded animate-pulse"></div>
+                            <div className="h-5 w-1/2 bg-muted rounded animate-pulse"></div>
+                        </div>
+                    ) : (
+                       <>
+                        <p><strong>Name:</strong> {newDisplayName || "N/A"}</p>
+                        <p><strong>Phone:</strong> {newPhone || "N/A"}</p>
+                        <p><strong>Email:</strong> {currentUser.email}</p>
+                       </>
+                    )}
+                    <Button variant="link" className="p-0 h-auto" onClick={() => setIsEditingProfile(true)} disabled={isUserDataLoading}>
+                        {isUserDataLoading ? <Loader2 className="mr-1 h-3 w-3 animate-spin"/> : <Pencil className="mr-1 h-3 w-3" />}
+                         Edit Profile
                     </Button>
                 </>
             )}

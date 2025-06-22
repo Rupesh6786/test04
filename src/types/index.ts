@@ -85,6 +85,7 @@ export interface User {
   email?: string | null;
   displayName?: string | null;
   photoURL?: string | null;
+  phone?: string | null;
   createdAt?: Timestamp | Date | string; // Firestore timestamp, can be Date after fetch, or string for display
   provider?: string; // e.g., 'google.com', 'email/password'
   accountStatus?: 'active' | 'suspended' | 'deactivated';

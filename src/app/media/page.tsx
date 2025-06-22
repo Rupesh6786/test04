@@ -1,8 +1,11 @@
 
+"use client";
+
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlayCircle, Image as ImageIcon } from 'lucide-react';
+import { PlayCircle, Image as ImageIcon, X } from 'lucide-react';
 import type { MediaItem } from '@/types';
+import { useState } from 'react';
 
 const mediaItems: MediaItem[] = [
   {
@@ -59,6 +62,8 @@ const mediaItems: MediaItem[] = [
 ];
 
 export default function MediaPage() {
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
@@ -77,24 +82,42 @@ export default function MediaPage() {
             <CardContent className="p-0">
               <div className="relative aspect-video">
                 {item.type === 'video' ? (
-                  <>
-                    <Image
-                      src={item.thumbnail || 'https://placehold.co/600x400.png'} // Fallback thumbnail
-                      alt={item.title}
-                      data-ai-hint={item.aiHint}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <a 
-                      href={item.src.startsWith('https://www.youtube.com/embed/') ? item.src : `https://www.youtube.com/watch?v=${item.src}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/60 transition-colors"
-                      aria-label={`Watch video: ${item.title}`}
-                    >
-                      <PlayCircle className="w-16 h-16 text-white/80 group-hover:text-white transition-colors" />
-                    </a>
-                  </>
+                  playingVideoId === item.id ? (
+                    <>
+                      <iframe
+                        src={`${item.src}?autoplay=1&rel=0`}
+                        title={item.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        className="absolute inset-0 w-full h-full"
+                      ></iframe>
+                      <button
+                        onClick={() => setPlayingVideoId(null)}
+                        className="absolute top-2 right-2 z-10 p-1 bg-black/50 text-white rounded-full hover:bg-black/75 transition-colors"
+                        aria-label="Close video"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Image
+                        src={item.thumbnail || 'https://placehold.co/600x400.png'}
+                        alt={item.title}
+                        data-ai-hint={item.aiHint}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <button
+                        onClick={() => setPlayingVideoId(item.id)}
+                        className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/60 transition-colors"
+                        aria-label={`Play video: ${item.title}`}
+                      >
+                        <PlayCircle className="w-16 h-16 text-white/80 group-hover:text-white transition-colors" />
+                      </button>
+                    </>
+                  )
                 ) : (
                   <Image
                     src={item.src}

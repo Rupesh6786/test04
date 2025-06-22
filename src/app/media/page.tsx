@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -11,7 +10,7 @@ const mediaItems: MediaItem[] = [
   {
     id: '1',
     type: 'video',
-    src: 'https://www.youtube.com/embed/bgo1nBq213I',
+    src: 'https://www.youtube.com/embed/9nbK1FFBC7U',
     thumbnail: 'https://placehold.co/600x400.png',
     title: 'AC Installation Demo',
     description: 'Watch our experts install an AC unit efficiently.',

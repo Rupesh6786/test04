@@ -30,7 +30,7 @@ import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import type { Service, Address } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, getDoc, query, onSnapshot } from "firebase/firestore";
 import { useRouter } from "next/navigation";
@@ -89,6 +89,19 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
       address: "",
     },
   });
+
+  const watchedServiceType = form.watch("serviceType");
+
+  const budgetPlaceholder = useMemo(() => {
+    if (!watchedServiceType) {
+      return "e.g., ₹500 - ₹1000";
+    }
+    const selectedService = availableServices.find(s => s.name === watchedServiceType);
+    if (selectedService && selectedService.price) {
+      return `e.g., Around ₹${selectedService.price.toLocaleString()}`;
+    }
+    return "e.g., ₹500 - ₹1000";
+  }, [watchedServiceType, availableServices]);
 
   useEffect(() => {
     if (currentUser) {
@@ -350,7 +363,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
               <FormItem>
                 <FormLabel>Budget (Optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., ₹500 - ₹1000" {...field} disabled={isSubmitting}/>
+                  <Input placeholder={budgetPlaceholder} {...field} disabled={isSubmitting}/>
                 </FormControl>
                 <FormDescription>
                   Let us know your budget range for the service.

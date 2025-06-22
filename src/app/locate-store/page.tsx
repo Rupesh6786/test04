@@ -1,14 +1,14 @@
 
-import { MapPin, Phone, Mail, Navigation } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function LocateStorePage() {
   const storeName = "Classic Solution";
   const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
   
   // This URL opens the address directly in Google Maps for navigation.
-  // It does not require an API key and avoids embedding issues.
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storeAddress)}`;
 
   return (
@@ -20,7 +20,7 @@ export default function LocateStorePage() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 items-start">
+      <div className="grid md:grid-cols-2 gap-8 items-stretch">
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="font-headline text-2xl text-primary flex items-center">
@@ -50,24 +50,17 @@ export default function LocateStorePage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="font-headline text-xl text-primary flex items-center">
-              <Navigation className="w-5 h-5 mr-2" /> Click to Navigate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Get directions to our store with a single click. This will open Google Maps in a new tab for easy navigation.
-              </p>
-              <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="block">
-                <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                  Open in Google Maps
-                </Button>
-              </a>
-          </CardContent>
-        </Card>
-
+        <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="block h-full">
+          <Card className="hover:shadow-lg transition-shadow h-full bg-primary/10 flex items-center justify-center">
+            <CardContent className="text-center p-6">
+                <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="font-headline text-xl font-semibold text-foreground mb-2">Click to Navigate</h3>
+                <p className="text-sm text-muted-foreground">
+                    {storeAddress}
+                </p>
+            </CardContent>
+          </Card>
+        </a>
       </div>
 
        <div className="mt-16 text-center">
@@ -76,12 +69,12 @@ export default function LocateStorePage() {
           No worries! You can browse our products online or book services right from your home.
         </p>
         <div className="space-x-4">
-            <a href="/products" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-accent-foreground bg-accent hover:bg-accent/90">
-            Shop Products
-          </a>
-           <a href="/services" className="inline-flex items-center justify-center px-6 py-3 border border-accent text-base font-medium rounded-md text-accent hover:bg-accent/10">
-            Book Services
-          </a>
+            <Link href="/products">
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">Shop Products</Button>
+            </Link>
+           <Link href="/services">
+             <Button variant="outline" className="border-accent text-accent hover:bg-accent/10">Book Services</Button>
+            </Link>
         </div>
       </div>
     </div>

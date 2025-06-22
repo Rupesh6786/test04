@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Service, Address } from "@/types";
 import { useEffect, useState, useMemo } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp, getDoc, query, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, getDoc, query, onSnapshot, doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";

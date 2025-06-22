@@ -369,7 +369,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
             control={form.control}
             name="bookingDate"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel>Preferred Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>

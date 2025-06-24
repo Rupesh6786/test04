@@ -366,16 +366,16 @@ export default function AdminAppointmentsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead onClick={() => requestSort('userName')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
+                      <TableHead onClick={() => requestSort('userName')} className="cursor-pointer hover:bg-muted/50 min-w-[200px]">
                         User {getSortIndicator('userName')}
                       </TableHead>
-                      <TableHead onClick={() => requestSort('serviceType')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
+                      <TableHead onClick={() => requestSort('serviceType')} className="cursor-pointer hover:bg-muted/50 min-w-[160px]">
                         Service {getSortIndicator('serviceType')}
                       </TableHead>
-                      <TableHead onClick={() => requestSort('bookingDate')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
+                      <TableHead onClick={() => requestSort('bookingDate')} className="cursor-pointer hover:bg-muted/50 min-w-[200px]">
                         Date & Time {getSortIndicator('bookingDate')}
                       </TableHead>
-                      <TableHead className="min-w-[200px]">Address</TableHead>
+                      <TableHead className="min-w-[220px]">Address</TableHead>
                       <TableHead onClick={() => requestSort('status')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
                         Status {getSortIndicator('status')}
                       </TableHead>
@@ -389,7 +389,7 @@ export default function AdminAppointmentsPage() {
                   <TableBody>
                     {filteredAndSortedAppointments.map((app) => (
                       <TableRow key={app.id + app.originalUserId}>
-                        <TableCell className="font-medium whitespace-nowrap">
+                        <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             <UserIcon className="h-4 w-4 text-muted-foreground shrink-0"/>
                             <div>
@@ -399,13 +399,13 @@ export default function AdminAppointmentsPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell>
                           <div className="flex items-center gap-1">
                               <WrenchIcon className="h-4 w-4 text-muted-foreground shrink-0"/> {app.serviceType}
                           </div>
                           {app.budget && <div className="text-xs text-muted-foreground">Budget: {app.budget}</div>}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell>
                           <div className="flex items-center gap-1">
                             <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0"/>
                             {app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'}
@@ -413,7 +413,7 @@ export default function AdminAppointmentsPage() {
                           <div className="text-xs text-muted-foreground ml-5">{app.bookingTime}</div>
                           <div className="text-xs text-muted-foreground ml-5">Created: {app.createdAt ? format(app.createdAt as Date, "MMM d, yy, p") : 'N/A'}</div>
                         </TableCell>
-                        <TableCell className="max-w-xs">
+                        <TableCell>
                           <div className="flex items-start gap-1">
                             <MapPinIcon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5"/> {app.address}
                           </div>

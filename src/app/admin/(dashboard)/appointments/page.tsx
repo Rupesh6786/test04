@@ -84,6 +84,19 @@ export default function AdminAppointmentsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof EnrichedAppointment, direction: 'ascending' | 'descending' } | null>(null);
   const [updatingStatusFor, setUpdatingStatusFor] = useState<string | null>(null);
 
+  // Helper function to truncate long emails
+  const truncateEmail = (email?: string): string => {
+    if (!email) return 'N/A';
+    const [local, domain] = email.split('@');
+    if (!domain) return email; // Not a valid email format for this logic
+
+    const localPartMaxLength = 9;
+    if (local.length > localPartMaxLength) {
+      return `${local.substring(0, localPartMaxLength)}*@${domain}`;
+    }
+    return email;
+  };
+
   const fetchAllAppointments = useCallback(async () => {
     if (!currentUser || !isAdmin) {
       console.warn("AdminAppointmentsPage: Not an admin or no current user. Aborting fetch.");
@@ -394,7 +407,7 @@ export default function AdminAppointmentsPage() {
                             <UserIcon className="h-4 w-4 text-muted-foreground shrink-0"/>
                             <div>
                               <div>{app.userName || 'N/A'}</div>
-                              <div className="text-xs text-muted-foreground">{app.userEmail || 'N/A'}</div>
+                              <div className="text-xs text-muted-foreground">{truncateEmail(app.userEmail)}</div>
                               <div className="text-xs text-muted-foreground flex items-center"><PhoneIcon className="h-3 w-3 mr-1"/>{app.phone}</div>
                             </div>
                           </div>
@@ -463,7 +476,7 @@ export default function AdminAppointmentsPage() {
                        <div className="flex items-start justify-between">
                          <div>
                             <CardTitle className="text-lg mb-1">{app.userName || 'N/A'}</CardTitle>
-                            <CardDescription className="text-sm">{app.userEmail || 'N/A'}</CardDescription>
+                            <CardDescription className="text-sm">{truncateEmail(app.userEmail)}</CardDescription>
                          </div>
                          <div className="absolute top-2 right-2">
                             <DropdownMenu>

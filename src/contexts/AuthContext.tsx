@@ -59,14 +59,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setCurrentUser(null);
           setIsLoggedIn(false);
           setIsAdmin(false);
-          // Optional: sign out from firebase auth session as well
           await firebaseSignOut(auth);
         } else {
-          // Account is active
+          // Account is active, determine if admin
+          const currentIsAdmin = ADMIN_UIDS.includes(user.uid);
+          
+          // Set state
           setCurrentUser(user);
           setIsLoggedIn(true);
-          const currentIsAdmin = ADMIN_UIDS.includes(user.uid);
           setIsAdmin(currentIsAdmin);
+          
+          // ** NEW **: Global redirect for admins.
+          // If the user is an admin and they are not on an admin page, redirect them.
+          if (currentIsAdmin && !pathname.startsWith('/admin')) {
+            router.push('/admin');
+          }
         }
       } else {
         // No user logged in
@@ -77,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [pathname, router]); // Dependency array ensures this runs on route changes
 
   const checkUserStatus = async (user: User): Promise<boolean> => {
     const userDocRef = doc(db, "users", user.uid);
@@ -97,17 +104,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       const isUserActive = await checkUserStatus(user);
       if (!isUserActive) {
-          // checkUserStatus already shows a toast and signs out.
           throw new Error('Account not active');
       }
 
       toast({ title: 'Login Successful', description: 'Welcome back!' });
       closeAuthModal();
+      // The onAuthStateChanged effect will handle the redirect now, making this redundant but harmless as a fallback.
       if (user && ADMIN_UIDS.includes(user.uid)) {
         router.push('/admin');
       }
     } catch (error) {
-      // Don't show toast for manually thrown 'Account not active' error
       if ((error as Error).message === 'Account not active') return;
 
       const authError = error as AuthError;
@@ -135,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       toast({ title: 'Login Failed', description, variant: 'destructive' });
-      throw authError; // Re-throw to be caught by the modal if needed
+      throw authError;
     }
   };
 
@@ -158,7 +164,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             provider: "email/password",
             accountStatus: "active",
           });
-          console.log(`AuthContext: Firestore document created for new email/password user ${user.uid}`);
         } catch (firestoreError) {
           console.error(`AuthContext: Firestore error creating document for user ${user.uid}:`, firestoreError);
           toast({ title: 'Account Partially Created', description: 'Authentication successful, but failed to save user profile data. Please contact support.', variant: 'destructive' });
@@ -192,10 +197,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             provider: "google.com", 
             accountStatus: 'active',
           });
-          console.log(`AuthContext: Firestore document created for new Google user ${user.uid}`);
           toast({ title: 'Welcome!', description: 'Your account has been created with Google.' });
         } else {
-          // Check status before allowing login to proceed
           if (userDocSnap.data().accountStatus === 'suspended' || userDocSnap.data().accountStatus === 'deactivated') {
               await firebaseSignOut(auth);
               toast({ title: 'Login Failed', description: `Your account has been ${userDocSnap.data().accountStatus}.`, variant: 'destructive' });
@@ -206,7 +209,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               photoURL: user.photoURL || userDocSnap.data()?.photoURL || null,
               lastLoginAt: serverTimestamp() 
           });
-          console.log(`AuthContext: Firestore document updated for returning Google user ${user.uid}`);
           toast({ title: 'Google Sign-In Successful', description: 'Welcome back!' });
         }
       } catch (firestoreError) {

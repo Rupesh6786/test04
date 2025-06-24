@@ -375,7 +375,7 @@ export default function AdminAppointmentsPage() {
           ) : (
             <>
               {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -515,7 +515,7 @@ export default function AdminAppointmentsPage() {
                             <span>{app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'} at {app.bookingTime}</span>
 
                             <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><MapPinIcon className="h-4 w-4"/>Address</span>
-                            <span>{app.address}</span>
+                            <span className="break-all">{app.address}</span>
                             
                             <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><PhoneIcon className="h-4 w-4"/>Contact</span>
                             <span>{app.phone}</span>

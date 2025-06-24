@@ -49,7 +49,7 @@ const productSchema = z.object({
   condition: z.enum(['New', 'Used'], { required_error: 'Condition is required.' }),
   description: z.string().min(10, { message: "Description must be at least 10 characters." }).max(1000, {message: "Description cannot exceed 1000 characters."}),
   category: z.string().min(3, { message: "Category must be at least 3 characters." }),
-  imageUrl: z.string().url({ message: "Please enter a valid image URL, or upload a file to generate one." }),
+  imageUrl: z.string().min(1, { message: "An image URL is required. Please upload a file or provide a URL." }),
   features: z.string().optional(),
   warranty: z.string().optional(),
 });
@@ -117,23 +117,40 @@ export function ProductFormModal({
     }
     setIsUploading(true);
     
-    // In a real app, you would upload to Firebase Storage here.
-    // This is a placeholder to guide development.
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate upload
-    
-    toast({
-      title: 'Next Step: Firebase Storage',
-      description: 'The UI is ready. The next step is to implement file upload to Firebase Storage here and then use the returned URL.',
-      duration: 5000,
-    });
-    
-    // Example of what to do after getting the URL from Firebase Storage:
-    // const downloadURL = "https://firebasestorage.googleapis.com/...";
-    // form.setValue('imageUrl', downloadURL, { shouldValidate: true });
-    // setPreviewUrl(downloadURL);
-    // setSelectedFile(null);
+    const formData = new FormData();
+    formData.append('file', selectedFile);
 
-    setIsUploading(false);
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'File upload failed');
+      }
+
+      const imageUrl = result.path;
+      form.setValue('imageUrl', imageUrl, { shouldValidate: true });
+      setPreviewUrl(imageUrl);
+      setSelectedFile(null);
+
+      toast({
+        title: 'Upload Successful',
+        description: 'Image has been uploaded and the path is set.',
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Upload Error',
+        description: error instanceof Error ? error.message : 'An unknown error occurred during upload.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -292,4 +309,3 @@ export function ProductFormModal({
     </Dialog>
   );
 }
-

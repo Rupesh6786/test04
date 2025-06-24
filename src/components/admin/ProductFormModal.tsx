@@ -101,12 +101,14 @@ export function ProductFormModal({
 
   useEffect(() => {
     if (!selectedFile) {
+      if (!form.getValues('imageUrl')) setPreviewUrl(null);
       return;
     }
     const objectUrl = URL.createObjectURL(selectedFile);
     setPreviewUrl(objectUrl);
+    form.setValue('imageUrl', '', { shouldValidate: true }); // Clear URL field to avoid confusion
     return () => URL.revokeObjectURL(objectUrl);
-  }, [selectedFile]);
+  }, [selectedFile, form]);
 
   const handleUpload = async () => {
     if (!selectedFile) {
@@ -137,7 +139,6 @@ export function ProductFormModal({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
       setSelectedFile(event.target.files[0]);
-      form.setValue('imageUrl', '', { shouldValidate: false }); // Clear URL field and validation
     }
   };
   
@@ -222,36 +223,58 @@ export function ProductFormModal({
             <FormField control={form.control} name="warranty" render={({ field }) => ( <FormItem><FormLabel>Warranty (Optional)</FormLabel><FormControl><Input placeholder="e.g., 1 Year Parts, 5 Years Compressor" {...field} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={form.control} name="features" render={({ field }) => ( <FormItem><FormLabel>Features (Optional)</FormLabel><FormControl><Textarea placeholder="Comma-separated features..." {...field} rows={3} /></FormControl><ShadFormDescription>Enter key features separated by commas.</ShadFormDescription><FormMessage /></FormItem> )} />
             
-            <FormField control={form.control} name="imageUrl" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Image</FormLabel>
-                  <Tabs defaultValue="url" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="url" onClick={() => setSelectedFile(null)}>From URL</TabsTrigger>
-                      <TabsTrigger value="upload">Upload File</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="url" className="pt-2">
-                      <FormControl><Input placeholder="https://example.com/image.png" value={field.value} onChange={(e) => { field.onChange(e); setPreviewUrl(e.target.value); setSelectedFile(null); }} /></FormControl>
-                      <ShadFormDescription>Direct URL to the product image.</ShadFormDescription>
-                    </TabsContent>
-                    <TabsContent value="upload" className="pt-2">
-                       <div className="flex items-center gap-2">
-                           <FormControl><Input type="file" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange} className="flex-grow" /></FormControl>
-                           <Button type="button" onClick={handleUpload} disabled={!selectedFile || isUploading}>{isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null} Upload</Button>
-                       </div>
-                       <ShadFormDescription>Upload an image from your device. Click "Upload" before saving.</ShadFormDescription>
-                    </TabsContent>
-                  </Tabs>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+              <FormLabel>Product Image</FormLabel>
+              <Tabs defaultValue="url" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="url">From URL</TabsTrigger>
+                  <TabsTrigger value="upload">Upload File</TabsTrigger>
+                </TabsList>
+                <TabsContent value="url" className="pt-2">
+                  <FormField
+                    control={form.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input 
+                            placeholder="https://example.com/image.png"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              setPreviewUrl(e.target.value);
+                              setSelectedFile(null);
+                            }}
+                          />
+                        </FormControl>
+                        <ShadFormDescription>Direct URL to the product image.</ShadFormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+                <TabsContent value="upload" className="pt-2">
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      type="file"
+                      accept="image/png, image/jpeg, image/webp"
+                      onChange={handleFileChange}
+                      className="flex-grow"
+                    />
+                    <Button type="button" onClick={handleUpload} disabled={!selectedFile || isUploading}>
+                      {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null} Upload
+                    </Button>
+                  </div>
+                  <ShadFormDescription>Upload an image from your device. Click "Upload" before saving.</ShadFormDescription>
+                </TabsContent>
+              </Tabs>
+            </FormItem>
             
-            {(previewUrl || form.getValues('imageUrl')) && (
+            {previewUrl && (
                <div>
                   <FormLabel>Image Preview</FormLabel>
                   <div className="mt-2 w-full aspect-video relative bg-muted rounded-md overflow-hidden flex items-center justify-center border">
-                    <img src={previewUrl || form.getValues('imageUrl')} alt="Product Preview" className="object-contain max-w-full max-h-full" />
+                    <img src={previewUrl} alt="Product Preview" className="object-contain max-w-full max-h-full" />
                   </div>
                </div>
             )}
@@ -269,3 +292,4 @@ export function ProductFormModal({
     </Dialog>
   );
 }
+

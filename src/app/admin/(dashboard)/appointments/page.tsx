@@ -375,14 +375,14 @@ export default function AdminAppointmentsPage() {
                       <TableHead onClick={() => requestSort('bookingDate')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
                         Date & Time {getSortIndicator('bookingDate')}
                       </TableHead>
-                      <TableHead className="whitespace-nowrap">Address</TableHead>
+                      <TableHead className="min-w-[200px]">Address</TableHead>
                       <TableHead onClick={() => requestSort('status')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
                         Status {getSortIndicator('status')}
                       </TableHead>
                       <TableHead onClick={() => requestSort('pricePaid')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap text-right">
                         Price Paid {getSortIndicator('pricePaid')}
                       </TableHead>
-                      <TableHead className="whitespace-nowrap">Payment ID</TableHead>
+                      <TableHead className="hidden lg:table-cell whitespace-nowrap">Payment ID</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -413,7 +413,7 @@ export default function AdminAppointmentsPage() {
                           <div className="text-xs text-muted-foreground ml-5">{app.bookingTime}</div>
                           <div className="text-xs text-muted-foreground ml-5">Created: {app.createdAt ? format(app.createdAt as Date, "MMM d, yy, p") : 'N/A'}</div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap max-w-xs truncate">
+                        <TableCell className="max-w-xs">
                           <div className="flex items-start gap-1">
                             <MapPinIcon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5"/> {app.address}
                           </div>
@@ -426,7 +426,7 @@ export default function AdminAppointmentsPage() {
                         <TableCell className="whitespace-nowrap text-right">
                           {app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap max-w-[100px] truncate">
+                        <TableCell className="hidden lg:table-cell whitespace-nowrap max-w-[100px] truncate">
                           {app.paymentId || 'N/A'}
                         </TableCell>
                         <TableCell className="text-right whitespace-nowrap">
@@ -459,57 +459,60 @@ export default function AdminAppointmentsPage() {
               <div className="block md:hidden space-y-4">
                 {filteredAndSortedAppointments.map((app) => (
                   <Card key={app.id + app.originalUserId} className="relative">
-                    <CardHeader className="flex flex-row items-start justify-between p-4 pb-2">
-                      <div>
-                        <CardTitle className="text-lg mb-1">{app.userName || 'N/A'}</CardTitle>
-                        <CardDescription className="flex items-center gap-1.5 text-sm">
-                          <WrenchIcon className="h-4 w-4 shrink-0" /> {app.serviceType}
-                        </CardDescription>
-                      </div>
-                      <div className="absolute top-2 right-2">
-                        <DropdownMenu>
-                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" disabled={updatingStatusFor === app.id}>
-                              {updatingStatusFor === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {appointmentStatuses.map(status => (
-                              <DropdownMenuItem
-                                key={status}
-                                onClick={() => handleUpdateStatus(app.originalUserId, app.id, status)}
-                                disabled={app.status === status || updatingStatusFor === app.id}
-                              >
-                                Mark as {status}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                    <CardHeader className="p-4 pb-2">
+                       <div className="flex items-start justify-between">
+                         <div>
+                            <CardTitle className="text-lg mb-1">{app.userName || 'N/A'}</CardTitle>
+                            <CardDescription className="text-sm">{app.userEmail || 'N/A'}</CardDescription>
+                         </div>
+                         <div className="absolute top-2 right-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" disabled={updatingStatusFor === app.id}>
+                                  {updatingStatusFor === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {appointmentStatuses.map(status => (
+                                  <DropdownMenuItem
+                                    key={status}
+                                    onClick={() => handleUpdateStatus(app.originalUserId, app.id, status)}
+                                    disabled={app.status === status || updatingStatusFor === app.id}
+                                  >
+                                    Mark as {status}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 pt-2 text-sm space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Status</span>
-                        <Badge variant="outline" className={`text-xs ${getStatusColor(app.status)}`}>
-                          {app.status}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground font-medium">Details</p>
-                        <div className="pl-2 border-l-2 text-foreground/90 space-y-1">
-                          <p><span className="font-semibold">Date:</span> {app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'} at {app.bookingTime}</p>
-                          <p><span className="font-semibold">Address:</span> {app.address}</p>
-                          <p><span className="font-semibold">Email:</span> {app.userEmail || 'N/A'}</p>
-                          <p><span className="font-semibold">Phone:</span> {app.phone}</p>
+                    <CardContent className="p-4 pt-2 text-sm space-y-4">
+                        <div className="flex justify-between items-center border-b pb-3">
+                            <span className="text-muted-foreground font-semibold">Status</span>
+                            <Badge variant="outline" className={`text-xs font-medium ${getStatusColor(app.status)}`}>
+                                {app.status}
+                            </Badge>
                         </div>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-muted-foreground font-medium">Payment</p>
-                        <div className="pl-2 border-l-2 text-foreground/90 space-y-1">
-                          <p><span className="font-semibold">Price Paid:</span> {app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}</p>
-                          <p className="flex items-start"><span className="font-semibold shrink-0 mr-1">Payment ID:</span> <span className="truncate">{app.paymentId || 'N/A'}</span></p>
+                        <div className="grid grid-cols-[auto,1fr] items-start gap-x-4 gap-y-2">
+                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><WrenchIcon className="h-4 w-4"/>Service</span>
+                            <span>{app.serviceType}</span>
+                        
+                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><CalendarDays className="h-4 w-4"/>Date</span>
+                            <span>{app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'} at {app.bookingTime}</span>
+
+                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><MapPinIcon className="h-4 w-4"/>Address</span>
+                            <span>{app.address}</span>
+                            
+                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><PhoneIcon className="h-4 w-4"/>Contact</span>
+                            <span>{app.phone}</span>
+                            
+                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Price</span>
+                            <span>{app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}</span>
+
+                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Payment ID</span>
+                            <span className="truncate">{app.paymentId || 'N/A'}</span>
                         </div>
-                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -528,5 +531,3 @@ export default function AdminAppointmentsPage() {
     </div>
   );
 }
-
-    

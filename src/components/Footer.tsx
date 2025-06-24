@@ -63,10 +63,10 @@ export function Footer() {
               <p><a href="mailto:classicsolutionofficial@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">classicsolutionofficial@gmail.com</a></p>
             </address>
             <div className="mt-4 flex space-x-4">
-              <SocialLinkItem href="https://www.facebook.com/profile.php?id=100054679285920&mibextid=ZbWKwL" icon={Facebook} label="Facebook" />
+              <SocialLinkItem href="https://www.facebook.com/share/1Bka82yYBn/" icon={Facebook} label="Facebook" />
               <SocialLinkItem href="https://www.instagram.com/classic_solution_official/" icon={Instagram} label="Instagram" />
-              <SocialLinkItem href="https://www.linkedin.com/in/ar-c-9a37a1224" icon={Linkedin} label="LinkedIn" />
-              <SocialLinkItem href="https://twitter.com/rupesh.devp" icon={Twitter} label="Twitter" />
+              <SocialLinkItem href="https://www.linkedin.com/in/gulam-mainuddin-khan-79913mk" icon={Linkedin} label="LinkedIn" />
+              <SocialLinkItem href="https://x.com/GulamKh31049008" icon={Twitter} label="Twitter" />
             </div>
           </div>
           

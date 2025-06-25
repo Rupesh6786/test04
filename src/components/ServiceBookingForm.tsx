@@ -362,7 +362,13 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
               <FormItem>
                 <FormLabel>Payment Amount (₹)</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder={paymentAmountPlaceholder} {...field} disabled={isSubmitting}/>
+                  <Input
+                    type="number"
+                    placeholder={paymentAmountPlaceholder}
+                    {...field}
+                    value={field.value ?? ''}
+                    disabled={isSubmitting}
+                  />
                 </FormControl>
                 <FormDescription>
                   This is the amount you will be charged for the service.

@@ -44,7 +44,7 @@ const serviceBookingSchema = z.object({
   serviceType: z.string({ required_error: "Please select a service type." }),
   bookingDate: z.date({ required_error: "A date for booking is required." }),
   bookingTime: z.string({ required_error: "Please select a time slot." }),
-  budget: z.string().optional(),
+  paymentAmount: z.coerce.number().min(1, { message: "Amount must be at least ₹1." }),
   address: z.string().min(5, { message: "Address must be at least 5 characters."}),
 });
 
@@ -82,23 +82,31 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
       phone: "", 
       email: currentUser?.email || "",
       serviceType: initialServiceType || "",
-      budget: "",
+      paymentAmount: undefined,
       address: "",
     },
   });
 
   const watchedServiceType = form.watch("serviceType");
 
-  const budgetPlaceholder = useMemo(() => {
+  const paymentAmountPlaceholder = useMemo(() => {
     if (!watchedServiceType) {
-      return "e.g., ₹500 - ₹1000";
+      return "e.g., 500";
     }
     const selectedService = availableServices.find(s => s.name === watchedServiceType);
     if (selectedService && selectedService.price) {
-      return `e.g., Around ₹${selectedService.price.toLocaleString()}`;
+      return `${selectedService.price}`;
     }
-    return "e.g., ₹500 - ₹1000";
+    return "e.g., 500";
   }, [watchedServiceType, availableServices]);
+  
+  useEffect(() => {
+    const selectedService = availableServices.find(s => s.name === watchedServiceType);
+    if (selectedService && selectedService.price) {
+      form.setValue("paymentAmount", selectedService.price);
+    }
+  }, [watchedServiceType, availableServices, form]);
+
 
   useEffect(() => {
     if (currentUser) {
@@ -149,7 +157,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
         phone: "", 
         email: "",
         serviceType: initialServiceType || "",
-        budget: "",
+        paymentAmount: undefined,
         address: "",
       });
     }
@@ -183,7 +191,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
         serviceType: data.serviceType,
         bookingDate: format(data.bookingDate, "yyyy-MM-dd"), // Store date as string
         bookingTime: data.bookingTime,
-        budget: data.budget || "",
+        paymentAmount: data.paymentAmount,
         status: "Payment Pending", // Initial status
         createdAt: serverTimestamp(), // For ordering
       });
@@ -202,7 +210,7 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
         serviceType: "", 
         bookingDate: undefined,
         bookingTime: undefined,
-        budget: "",
+        paymentAmount: undefined,
         address: "",
       });
     } catch (error) {
@@ -349,15 +357,15 @@ export function ServiceBookingForm({ availableServices, initialServiceType }: Se
           />
           <FormField
             control={form.control}
-            name="budget"
+            name="paymentAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Budget (Optional)</FormLabel>
+                <FormLabel>Payment Amount (₹)</FormLabel>
                 <FormControl>
-                  <Input placeholder={budgetPlaceholder} {...field} disabled={isSubmitting}/>
+                  <Input type="number" placeholder={paymentAmountPlaceholder} {...field} disabled={isSubmitting}/>
                 </FormControl>
                 <FormDescription>
-                  Let us know your budget range for the service.
+                  This is the amount you will be charged for the service.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

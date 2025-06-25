@@ -33,7 +33,7 @@ export interface Service {
 }
 
 export interface Offer {
-  id: string;
+  id:string;
   title: string;
   description: string;
   imageUrl?: string;
@@ -77,6 +77,7 @@ export interface Appointment {
   createdAt: any; // Firestore ServerTimestamp or Date object after fetch
   paymentId?: string; // Razorpay Payment ID
   pricePaid?: number; // Amount paid, in smallest currency unit (e.g., paise)
+  paymentAmount?: number; // The amount to be paid for the service
 }
 
 // Enhanced User type for admin display and Firestore documents

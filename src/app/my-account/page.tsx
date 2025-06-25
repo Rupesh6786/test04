@@ -29,7 +29,6 @@ import { format, parseISO } from 'date-fns';
 import type {} from '@/types/razorpay';
 
 const RAZORPAY_KEY_ID = "rzp_test_lw1YZ20Ss4PtqR";
-const APPOINTMENT_FIXED_PAY_AMOUNT = 50000; // Example: 500.00 INR in paise
 
 export default function MyAccountPage() {
   const { currentUser, isLoggedIn, loading, logout, openAuthModal } = useAuth();
@@ -178,11 +177,22 @@ export default function MyAccountPage() {
       return;
     }
 
+    const paymentAmount = appointment.paymentAmount;
+    if (!paymentAmount || paymentAmount <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "A valid payment amount is not available for this appointment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setProcessingPaymentForAppointmentId(appointment.id);
+    const amountInPaise = Math.round(paymentAmount * 100);
 
     const options: RazorpayOptions = {
       key: RAZORPAY_KEY_ID,
-      amount: APPOINTMENT_FIXED_PAY_AMOUNT,
+      amount: amountInPaise,
       currency: "INR",
       name: "Classic-Solution Service",
       description: `Payment for ${appointment.serviceType}`,
@@ -192,7 +202,7 @@ export default function MyAccountPage() {
           await updateDoc(appointmentRef, {
             status: "Confirmed",
             paymentId: response.razorpay_payment_id,
-            pricePaid: APPOINTMENT_FIXED_PAY_AMOUNT
+            pricePaid: amountInPaise
           });
           toast({
             title: "Payment Successful!",
@@ -455,39 +465,43 @@ export default function MyAccountPage() {
             )}
             {!isLoadingAppointments && appointments.length > 0 && (
               <ul className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                {appointments.map(app => (
-                  <li key={app.id} className="p-4 border rounded-md bg-background hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-semibold text-foreground">{app.serviceType}</h3>
-                        <p className="text-sm text-muted-foreground flex items-center">
-                            <CalendarDays className="w-3.5 h-3.5 mr-1.5 shrink-0"/> 
-                            {format(parseISO(app.bookingDate), "PPP")} 
-                            <Clock className="w-3.5 h-3.5 ml-2 mr-1.5 shrink-0"/> 
-                            {app.bookingTime}
-                        </p>
+                {appointments.map(app => {
+                  const amountToPay = app.paymentAmount || 0;
+                  return (
+                    <li key={app.id} className="p-4 border rounded-md bg-background hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold text-foreground">{app.serviceType}</h3>
+                          <p className="text-sm text-muted-foreground flex items-center">
+                              <CalendarDays className="w-3.5 h-3.5 mr-1.5 shrink-0"/> 
+                              {format(parseISO(app.bookingDate), "PPP")} 
+                              <Clock className="w-3.5 h-3.5 ml-2 mr-1.5 shrink-0"/> 
+                              {app.bookingTime}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}>
+                          {app.status}
+                        </span>
                       </div>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}>
-                        {app.status}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-1"><strong>Address:</strong> {app.address}</p>
-                     {app.pricePaid && <p className="text-sm text-muted-foreground mb-1"><strong>Amount Paid:</strong> ₹{(app.pricePaid / 100).toFixed(2)}</p>}
-                    {app.paymentId && <p className="text-sm text-muted-foreground mb-3"><strong>Payment ID:</strong> {app.paymentId}</p>}
-                    
-                    {app.status === 'Payment Pending' && (
-                        <Button 
-                            size="sm" 
-                            className="mt-2 bg-accent hover:bg-accent/90 text-accent-foreground"
-                            onClick={() => handlePayForAppointment(app)}
-                            disabled={!isRazorpayScriptLoaded || processingPaymentForAppointmentId === app.id || (RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID" || !RAZORPAY_KEY_ID)}
-                        >
-                            {processingPaymentForAppointmentId === app.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CreditCard className="mr-2 h-4 w-4"/>}
-                            {processingPaymentForAppointmentId === app.id ? 'Processing...' : `Pay Now (₹${(APPOINTMENT_FIXED_PAY_AMOUNT / 100).toFixed(2)})`}
-                        </Button>
-                    )}
-                  </li>
-                ))}
+                      <p className="text-sm text-muted-foreground mb-1"><strong>Address:</strong> {app.address}</p>
+                      {app.status !== 'Payment Pending' && app.pricePaid && <p className="text-sm text-muted-foreground mb-1"><strong>Amount Paid:</strong> ₹{(app.pricePaid / 100).toFixed(2)}</p>}
+                      {app.status === 'Payment Pending' && amountToPay > 0 && <p className="text-sm text-muted-foreground font-semibold mb-1"><strong>Amount to Pay:</strong> ₹{amountToPay.toFixed(2)}</p>}
+                      {app.paymentId && <p className="text-sm text-muted-foreground mb-3"><strong>Payment ID:</strong> {app.paymentId}</p>}
+                      
+                      {app.status === 'Payment Pending' && (
+                          <Button 
+                              size="sm" 
+                              className="mt-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+                              onClick={() => handlePayForAppointment(app)}
+                              disabled={amountToPay <= 0 || !isRazorpayScriptLoaded || processingPaymentForAppointmentId === app.id || (RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID" || !RAZORPAY_KEY_ID)}
+                          >
+                              {processingPaymentForAppointmentId === app.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CreditCard className="mr-2 h-4 w-4"/>}
+                              {processingPaymentForAppointmentId === app.id ? 'Processing...' : `Pay Now (₹${amountToPay.toFixed(2)})`}
+                          </Button>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
             {(RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID" || !RAZORPAY_KEY_ID) && appointments.some(a => a.status === 'Payment Pending') && (
@@ -583,4 +597,3 @@ export default function MyAccountPage() {
     </div>
   );
 }
-

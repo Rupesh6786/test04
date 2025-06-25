@@ -1,7 +1,30 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir, stat } from 'fs/promises';
 import { join } from 'path';
+
+// Function to ensure the directory exists
+async function ensureDirExists(dirPath: string) {
+  try {
+    // The 'stat' function will throw an error if the path doesn't exist.
+    await stat(dirPath);
+  } catch (error: any) {
+    // If the error is that the directory doesn't exist, create it.
+    if (error.code === 'ENOENT') {
+      try {
+        await mkdir(dirPath, { recursive: true });
+        console.log(`Created directory: ${dirPath}`);
+      } catch (mkdirError) {
+        console.error('Error creating directory:', mkdirError);
+        throw mkdirError; // Propagate the error
+      }
+    } else {
+      // For any other errors, re-throw them.
+      throw error;
+    }
+  }
+}
+
 
 export async function POST(request: NextRequest) {
   const data = await request.formData();
@@ -16,16 +39,17 @@ export async function POST(request: NextRequest) {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  // The path will be public/images/<filename>
-  // process.cwd() gives the root of the project
-  const path = join(process.cwd(), 'public', 'images', filename);
-
   try {
+    const imagesDir = join(process.cwd(), 'public', 'images');
+    await ensureDirExists(imagesDir);
+
+    const path = join(imagesDir, filename);
     await writeFile(path, buffer);
+    
     console.log(`File uploaded to: ${path}`);
-    // The URL path to be stored in DB and used in src attribute
     const publicPath = `/images/${filename}`;
     return NextResponse.json({ success: true, path: publicPath });
+
   } catch (error) {
     console.error('Error saving file:', error);
     return NextResponse.json({ success: false, error: 'Failed to save file.' }, { status: 500 });

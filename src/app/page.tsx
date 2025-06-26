@@ -33,7 +33,7 @@ export default function HomePage() {
     <>
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/20 via-background to-background py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://placehold.co/1920x1080/87CEEB/4682B4?text='')] bg-repeat"></div>
+        <div className="absolute inset-0 opacity-10 bg-[url('https://placehold.co/1920x1080/87CEEB/4682B4?text=')] bg-repeat"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="text-center md:text-left">
@@ -74,7 +74,11 @@ export default function HomePage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {whyChooseUsItems.map((item, index) => (
-              <Card key={index} className="text-center hover:shadow-xl transition-shadow duration-300 group bg-background">
+              <Card
+                key={index}
+                className="text-center hover:shadow-xl transition-shadow duration-300 group bg-background opacity-0 animate-fade-in-up"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
                 <CardHeader className="items-center">
                   <div className="p-4 bg-primary/10 rounded-full mb-4 group-hover:bg-primary/20 transition-colors">
                     <item.icon className="w-10 h-10 text-primary" />

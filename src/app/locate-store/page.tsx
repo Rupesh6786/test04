@@ -9,7 +9,7 @@ export default function LocateStorePage() {
   const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
   
   // This URL opens the address directly in Google Maps for navigation.
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storeAddress)}`;
+  const googleMapsUrl = "https://maps.app.goo.gl/WLGJs15dSfZA9nRM6?g_st=aw";
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">

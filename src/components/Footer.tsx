@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { Facebook, Instagram, Linkedin, ShieldCheck, Award, Users, MapPin, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Twitter, Info, FileText, Phone, Truck, RotateCcw } from 'lucide-react';
 
 const QuickLinkItem = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <li>
@@ -16,11 +16,13 @@ const SocialLinkItem = ({ href, icon: Icon, label }: { href: string; icon: React
   </a>
 );
 
-const TrustBadgeItem = ({ icon: Icon, text }: { icon: React.ElementType; text: string }) => (
-    <li className="flex items-center space-x-3 text-muted-foreground">
-        <Icon className="h-5 w-5 text-primary" />
-        <span>{text}</span>
-    </li>
+const PolicyLinkItem = ({ href, icon: Icon, text }: { href: string; icon: React.ElementType; text: string }) => (
+  <li>
+    <Link href={href} className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors">
+      <Icon className="h-5 w-5 text-primary" />
+      <span>{text}</span>
+    </Link>
+  </li>
 );
 
 export function Footer() {
@@ -45,7 +47,7 @@ export function Footer() {
               <QuickLinkItem href="/products">Products</QuickLinkItem>
               <QuickLinkItem href="/services">Services</QuickLinkItem>
               <QuickLinkItem href="/offers">Offers</QuickLinkItem>
-              <QuickLinkItem href="/about">Why Choose Us</QuickLinkItem>
+              <QuickLinkItem href="/media">Media</QuickLinkItem>
               <QuickLinkItem href="/locate-store">Locate Store</QuickLinkItem>
             </ul>
           </div>
@@ -58,7 +60,7 @@ export function Footer() {
                   <p>{shortAddress},</p>
                   <p>Mumbai-400068</p>
               </Link>
-              <p className="pt-1"><a href="tel:+919821806461" className="text-muted-foreground hover:text-primary transition-colors">+91 98218 06461</a></p>
+              <p className="pt-1"><a href="tel:+917991317190" className="text-muted-foreground hover:text-primary transition-colors">+91 79913 17190</a></p>
               <p><a href="mailto:classicsolutionofficial@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">classicsolutionofficial@gmail.com</a></p>
             </address>
              <div className="mt-4 flex space-x-4">
@@ -69,16 +71,17 @@ export function Footer() {
             </div>
           </div>
 
-            {/* Our Commitment */}
-            <div>
-                <h5 className="font-headline text-lg font-semibold text-foreground mb-4">Our Commitment</h5>
-                <ul className="space-y-3 text-sm">
-                    <TrustBadgeItem icon={ShieldCheck} text="Secure Payments" />
-                    <TrustBadgeItem icon={Award} text="Certified Technicians" />
-                    <TrustBadgeItem icon={Users} text="Customer Satisfaction" />
-                    <TrustBadgeItem icon={MapPin} text="Easy Store Locator" />
-                </ul>
-            </div>
+          {/* Policies */}
+          <div>
+            <h5 className="font-headline text-lg font-semibold text-foreground mb-4">Policies</h5>
+            <ul className="space-y-2 text-sm">
+              <PolicyLinkItem href="/about" icon={Info} text="About Us" />
+              <PolicyLinkItem href="/contact" icon={Phone} text="Contact Us" />
+              <PolicyLinkItem href="/shipping-policy" icon={Truck} text="Shipping Policy" />
+              <PolicyLinkItem href="/terms-and-conditions" icon={FileText} text="Terms & Conditions" />
+              <PolicyLinkItem href="/cancellations-and-refunds" icon={RotateCcw} text="Cancellations & Refunds" />
+            </ul>
+          </div>
         </div>
 
         <div className="mt-12 border-t pt-8 text-center text-sm">

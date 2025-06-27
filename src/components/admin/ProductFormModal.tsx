@@ -90,6 +90,8 @@ export function ProductFormModal({
     name: "imageUrls",
   });
 
+  const imageUrls = form.watch("imageUrls");
+
   useEffect(() => {
     if (productToEdit) {
       form.reset({ ...productToEdit, features: productToEdit.features || '', warranty: productToEdit.warranty || '', imageUrls: productToEdit.imageUrls || [] });
@@ -280,7 +282,7 @@ export function ProductFormModal({
                                         {fields.map((field, index) => (
                                             <div key={field.id} className="relative group">
                                                 <Image
-                                                    src={field.value}
+                                                    src={imageUrls[index]}
                                                     alt={`Product image ${index + 1}`}
                                                     width={150}
                                                     height={150}

@@ -355,130 +355,94 @@ export default function AdminAppointmentsPage() {
               Refresh Data
             </Button>
           </div>
-
-          {isLoading && !allAppointments.length ? (
-            <div className="flex justify-center items-center py-10">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <p className="ml-3 text-muted-foreground">Loading appointments...</p>
-            </div>
-          ) : !filteredAndSortedAppointments.length && !isLoading ? (
-            <div className="text-center py-10">
-              <ListChecks className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-2 text-lg font-medium text-foreground">No appointments found</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                There are no appointments matching your current filters, no users have appointments, or no users were found.
-              </p>
-               <p className="mt-1 text-xs text-muted-foreground">
-                Check console logs for details on user and appointment fetching.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead onClick={() => requestSort('userName')} className="cursor-pointer hover:bg-muted/50 min-w-[200px]">
-                        User {getSortIndicator('userName')}
-                      </TableHead>
-                      <TableHead onClick={() => requestSort('serviceType')} className="cursor-pointer hover:bg-muted/50 min-w-[160px]">
-                        Service {getSortIndicator('serviceType')}
-                      </TableHead>
-                      <TableHead onClick={() => requestSort('bookingDate')} className="cursor-pointer hover:bg-muted/50 min-w-[200px]">
-                        Date & Time {getSortIndicator('bookingDate')}
-                      </TableHead>
-                      <TableHead className="min-w-[220px]">Address</TableHead>
-                      <TableHead onClick={() => requestSort('status')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
-                        Status {getSortIndicator('status')}
-                      </TableHead>
-                      <TableHead onClick={() => requestSort('pricePaid')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap text-right">
-                        Price Paid {getSortIndicator('pricePaid')}
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell whitespace-nowrap">Payment ID</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAndSortedAppointments.map((app) => (
-                      <TableRow key={app.id + app.originalUserId}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <UserIcon className="h-4 w-4 text-muted-foreground shrink-0"/>
-                            <div>
-                              <div>{app.userName || 'N/A'}</div>
-                              <div className="text-xs text-muted-foreground">{truncateEmail(app.userEmail)}</div>
-                              <div className="text-xs text-muted-foreground flex items-center"><PhoneIcon className="h-3 w-3 mr-1"/>{app.phone}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                              <WrenchIcon className="h-4 w-4 text-muted-foreground shrink-0"/> {app.serviceType}
-                          </div>
-                          {app.budget && <div className="text-xs text-muted-foreground">Budget: {app.budget}</div>}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0"/>
-                            {app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'}
-                          </div>
-                          <div className="text-xs text-muted-foreground ml-5">{app.bookingTime}</div>
-                          <div className="text-xs text-muted-foreground ml-5">Created: {app.createdAt ? format(app.createdAt as Date, "MMM d, yy, p") : 'N/A'}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-start gap-1">
-                            <MapPinIcon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5"/> {app.address}
-                          </div>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          <Badge variant="outline" className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(app.status)}`}>
-                            {app.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-right">
-                          {app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell whitespace-nowrap max-w-[100px] truncate">
-                          {app.paymentId || 'N/A'}
-                        </TableCell>
-                        <TableCell className="text-right whitespace-nowrap">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" disabled={updatingStatusFor === app.id}>
-                                {updatingStatusFor === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {appointmentStatuses.map(status => (
-                                <DropdownMenuItem
-                                  key={status}
-                                  onClick={() => handleUpdateStatus(app.originalUserId, app.id, status)}
-                                  disabled={app.status === status || updatingStatusFor === app.id}
-                                >
-                                  Mark as {status}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+          <div className="overflow-x-auto">
+            {isLoading && !allAppointments.length ? (
+              <div className="flex justify-center items-center py-10">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="ml-3 text-muted-foreground">Loading appointments...</p>
               </div>
-
-              {/* Mobile Card View */}
-              <div className="block md:hidden space-y-4">
-                {filteredAndSortedAppointments.map((app) => (
-                  <Card key={app.id + app.originalUserId} className="relative">
-                    <CardHeader className="p-4 pb-2">
-                       <div className="flex items-start justify-between">
-                         <div>
-                            <CardTitle className="text-lg mb-1">{app.userName || 'N/A'}</CardTitle>
-                            <CardDescription className="text-sm">{truncateEmail(app.userEmail)}</CardDescription>
-                         </div>
-                         <div className="absolute top-2 right-2">
+            ) : !filteredAndSortedAppointments.length && !isLoading ? (
+              <div className="text-center py-10">
+                <ListChecks className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-lg font-medium text-foreground">No appointments found</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  There are no appointments matching your current filters, no users have appointments, or no users were found.
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Check console logs for details on user and appointment fetching.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead onClick={() => requestSort('userName')} className="cursor-pointer hover:bg-muted/50 min-w-[200px]">
+                          User {getSortIndicator('userName')}
+                        </TableHead>
+                        <TableHead onClick={() => requestSort('serviceType')} className="cursor-pointer hover:bg-muted/50 min-w-[160px]">
+                          Service {getSortIndicator('serviceType')}
+                        </TableHead>
+                        <TableHead onClick={() => requestSort('bookingDate')} className="cursor-pointer hover:bg-muted/50 min-w-[200px]">
+                          Date & Time {getSortIndicator('bookingDate')}
+                        </TableHead>
+                        <TableHead className="min-w-[220px]">Address</TableHead>
+                        <TableHead onClick={() => requestSort('status')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap">
+                          Status {getSortIndicator('status')}
+                        </TableHead>
+                        <TableHead onClick={() => requestSort('pricePaid')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap text-right">
+                          Price Paid {getSortIndicator('pricePaid')}
+                        </TableHead>
+                        <TableHead className="hidden lg:table-cell whitespace-nowrap">Payment ID</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAndSortedAppointments.map((app) => (
+                        <TableRow key={app.id + app.originalUserId}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <UserIcon className="h-4 w-4 text-muted-foreground shrink-0"/>
+                              <div>
+                                <div>{app.userName || 'N/A'}</div>
+                                <div className="text-xs text-muted-foreground">{truncateEmail(app.userEmail)}</div>
+                                <div className="text-xs text-muted-foreground flex items-center"><PhoneIcon className="h-3 w-3 mr-1"/>{app.phone}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                                <WrenchIcon className="h-4 w-4 text-muted-foreground shrink-0"/> {app.serviceType}
+                            </div>
+                            {app.budget && <div className="text-xs text-muted-foreground">Budget: {app.budget}</div>}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0"/>
+                              {app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'}
+                            </div>
+                            <div className="text-xs text-muted-foreground ml-5">{app.bookingTime}</div>
+                            <div className="text-xs text-muted-foreground ml-5">Created: {app.createdAt ? format(app.createdAt as Date, "MMM d, yy, p") : 'N/A'}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-start gap-1">
+                              <MapPinIcon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5"/> {app.address}
+                            </div>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <Badge variant="outline" className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(app.status)}`}>
+                              {app.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap text-right">
+                            {app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell whitespace-nowrap max-w-[100px] truncate">
+                            {app.paymentId || 'N/A'}
+                          </TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" disabled={updatingStatusFor === app.id}>
@@ -497,41 +461,78 @@ export default function AdminAppointmentsPage() {
                                 ))}
                               </DropdownMenuContent>
                             </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="block md:hidden space-y-4">
+                  {filteredAndSortedAppointments.map((app) => (
+                    <Card key={app.id + app.originalUserId} className="relative">
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                              <CardTitle className="text-lg mb-1">{app.userName || 'N/A'}</CardTitle>
+                              <CardDescription className="text-sm">{truncateEmail(app.userEmail)}</CardDescription>
                           </div>
-                       </div>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-2 text-sm space-y-4">
-                        <div className="flex justify-between items-center border-b pb-3">
-                            <span className="text-muted-foreground font-semibold">Status</span>
-                            <Badge variant="outline" className={`text-xs font-medium ${getStatusColor(app.status)}`}>
-                                {app.status}
-                            </Badge>
+                          <div className="absolute top-2 right-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" disabled={updatingStatusFor === app.id}>
+                                    {updatingStatusFor === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {appointmentStatuses.map(status => (
+                                    <DropdownMenuItem
+                                      key={status}
+                                      onClick={() => handleUpdateStatus(app.originalUserId, app.id, status)}
+                                      disabled={app.status === status || updatingStatusFor === app.id}
+                                    >
+                                      Mark as {status}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-[auto,1fr] items-start gap-x-4 gap-y-2">
-                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><WrenchIcon className="h-4 w-4"/>Service</span>
-                            <span>{app.serviceType}</span>
-                        
-                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><CalendarDays className="h-4 w-4"/>Date</span>
-                            <span>{app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'} at {app.bookingTime}</span>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-2 text-sm space-y-4">
+                          <div className="flex justify-between items-center border-b pb-3">
+                              <span className="text-muted-foreground font-semibold">Status</span>
+                              <Badge variant="outline" className={`text-xs font-medium ${getStatusColor(app.status)}`}>
+                                  {app.status}
+                              </Badge>
+                          </div>
+                          <div className="grid grid-cols-[auto,1fr] items-start gap-x-4 gap-y-2">
+                              <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><WrenchIcon className="h-4 w-4"/>Service</span>
+                              <span>{app.serviceType}</span>
+                          
+                              <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><CalendarDays className="h-4 w-4"/>Date</span>
+                              <span>{app.bookingDate ? format(parseISO(app.bookingDate), "MMM d, yyyy") : 'N/A'} at {app.bookingTime}</span>
 
-                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><MapPinIcon className="h-4 w-4"/>Address</span>
-                            <span className="break-all">{app.address}</span>
-                            
-                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><PhoneIcon className="h-4 w-4"/>Contact</span>
-                            <span>{app.phone}</span>
-                            
-                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Price</span>
-                            <span>{app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}</span>
+                              <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><MapPinIcon className="h-4 w-4"/>Address</span>
+                              <span className="break-all">{app.address}</span>
+                              
+                              <span className="font-semibold text-muted-foreground flex items-center gap-1.5"><PhoneIcon className="h-4 w-4"/>Contact</span>
+                              <span>{app.phone}</span>
+                              
+                              <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Price</span>
+                              <span>{app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}</span>
 
-                            <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Payment ID</span>
-                            <span className="truncate">{app.paymentId || 'N/A'}</span>
-                        </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
+                              <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Payment ID</span>
+                              <span className="truncate">{app.paymentId || 'N/A'}</span>
+                          </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <div className="mt-6">
             <h4 className="text-md font-semibold text-foreground mb-2">Future Enhancements:</h4>
             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">

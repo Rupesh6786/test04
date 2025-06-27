@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -288,8 +287,8 @@ export default function AdminOffersPage() {
                         <TableCell className="font-medium">{offer.title}</TableCell>
                         <TableCell className="text-sm text-muted-foreground truncate max-w-xs">{offer.description}</TableCell>
                         <TableCell>
-                          <Link href={offer.ctaLink} passHref legacyBehavior>
-                            <a target="_blank" className="text-primary hover:underline text-sm font-medium">{offer.ctaText}</a>
+                          <Link href={offer.ctaLink} target="_blank" className="text-primary hover:underline text-sm font-medium">
+                            {offer.ctaText}
                           </Link>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
@@ -343,7 +342,9 @@ export default function AdminOffersPage() {
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="font-semibold text-muted-foreground">CTA</span>
-                                <Link href={offer.ctaLink} passHref legacyBehavior><a target="_blank" className="text-primary hover:underline">{offer.ctaText}</a></Link>
+                                <Link href={offer.ctaLink} target="_blank" className="text-primary hover:underline">
+                                  {offer.ctaText}
+                                </Link>
                             </div>
                              <div className="flex justify-between items-center text-xs text-muted-foreground">
                                 <span>Created: {offer.createdAt ? format(offer.createdAt, 'MMM d, yyyy') : 'N/A'}</span>
@@ -424,5 +425,3 @@ export default function AdminOffersPage() {
     </div>
   );
 }
-
-    

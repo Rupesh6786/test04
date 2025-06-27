@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,11 +18,12 @@ import {
     Wrench,
     PackageX,
     FileClock,
+    Tag,
 } from "lucide-react";
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, Timestamp, FirestoreError } from 'firebase/firestore';
+import { collection, getDocs, query, Timestamp, FirestoreError, where } from 'firebase/firestore';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Appointment as AppointmentType, User as UserType, Product, Service } from '@/types'; 
+import type { Appointment as AppointmentType, User as UserType, Product, Service, Offer } from '@/types'; 
 import { formatDistanceToNow } from 'date-fns';
 
 // Local type for enriched recent appointments
@@ -43,6 +45,7 @@ export default function AdminDashboardPage() {
     totalProducts: 0,
     outOfStockProducts: 0,
     activeServices: 0,
+    activeOffers: 0,
   });
   
   // Unified state for data fetching
@@ -83,9 +86,10 @@ export default function AdminDashboardPage() {
         const usersQuery = getDocs(collection(db, 'users'));
         const productsQuery = getDocs(collection(db, 'products'));
         const servicesQuery = getDocs(collection(db, 'services'));
+        const offersQuery = getDocs(query(collection(db, 'offers'), where('status', '==', 'Active')));
 
-        const [usersSnapshot, productsSnapshot, servicesSnapshot] = await Promise.all([
-          usersQuery, productsQuery, servicesQuery
+        const [usersSnapshot, productsSnapshot, servicesSnapshot, offersSnapshot] = await Promise.all([
+          usersQuery, productsQuery, servicesQuery, offersQuery
         ]);
 
         // --- Process Users & Create a map for easy lookup ---
@@ -104,6 +108,7 @@ export default function AdminDashboardPage() {
         const totalProducts = productsSnapshot.size;
         const outOfStockProducts = productsSnapshot.docs.filter(doc => (doc.data() as Product).stock === 0).length;
         const activeServices = servicesSnapshot.docs.filter(doc => (doc.data() as Service).status === 'Active').length;
+        const activeOffersCount = offersSnapshot.size;
         
         // --- Fetch ALL appointments from all users ---
         let allAppointments: AppointmentType[] = [];
@@ -130,6 +135,7 @@ export default function AdminDashboardPage() {
           totalAppointments,
           pendingAppointments,
           totalRevenue,
+          activeOffers: activeOffersCount,
         });
 
         // --- DERIVE and Enrich RECENT APPOINTMENTS from allAppointments ---
@@ -185,13 +191,14 @@ export default function AdminDashboardPage() {
 
       {/* --- STATS CARDS --- */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Revenue" value={`₹${stats.totalRevenue.toFixed(2)}`} icon={DollarSign} isLoading={isLoading} />
-        <StatCard title="Total Users" value={stats.userCount} icon={Users} isLoading={isLoading} />
-        <StatCard title="Total Appointments" value={stats.totalAppointments} icon={ListChecks} isLoading={isLoading} />
-        <StatCard title="Pending Appointments" value={stats.pendingAppointments} icon={Activity} isLoading={isLoading} />
-        <StatCard title="Total Products" value={stats.totalProducts} icon={Package} isLoading={isLoading} />
-        <StatCard title="Out of Stock" value={stats.outOfStockProducts} icon={PackageX} isLoading={isLoading} />
-        <StatCard title="Active Services" value={stats.activeServices} icon={Wrench} isLoading={isLoading} />
+        <Link href="/admin/appointments"><StatCard title="Total Revenue" value={`₹${stats.totalRevenue.toFixed(2)}`} icon={DollarSign} isLoading={isLoading} /></Link>
+        <Link href="/admin/users"><StatCard title="Total Users" value={stats.userCount} icon={Users} isLoading={isLoading} /></Link>
+        <Link href="/admin/appointments"><StatCard title="Total Appointments" value={stats.totalAppointments} icon={ListChecks} isLoading={isLoading} /></Link>
+        <Link href="/admin/appointments"><StatCard title="Pending Appointments" value={stats.pendingAppointments} icon={Activity} isLoading={isLoading} /></Link>
+        <Link href="/admin/products"><StatCard title="Total Products" value={stats.totalProducts} icon={Package} isLoading={isLoading} /></Link>
+        <Link href="/admin/products"><StatCard title="Out of Stock" value={stats.outOfStockProducts} icon={PackageX} isLoading={isLoading} /></Link>
+        <Link href="/admin/services"><StatCard title="Active Services" value={stats.activeServices} icon={Wrench} isLoading={isLoading} /></Link>
+        <Link href="/admin/offers"><StatCard title="Active Offers" value={stats.activeOffers} icon={Tag} isLoading={isLoading} /></Link>
       </div>
 
       {/* --- RECENT ACTIVITY --- */}
@@ -256,7 +263,7 @@ export default function AdminDashboardPage() {
 // Helper component for Stat Cards to reduce repetition
 function StatCard({ title, value, icon: Icon, isLoading }: { title: string, value: string | number, icon: React.ElementType, isLoading: boolean }) {
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-5 w-5 text-muted-foreground" />

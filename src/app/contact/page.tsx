@@ -19,7 +19,7 @@ export default function ContactUsPage() {
             <Card className="max-w-6xl mx-auto shadow-lg grid md:grid-cols-2 overflow-hidden">
                 <div className="p-4 sm:p-8">
                     <CardHeader className="p-0 mb-6">
-                        <CardTitle className="font-headline text-2xl">Get in Touch</CardTitle>
+                        <CardTitle className="font-headline text-xl sm:text-2xl">Get in Touch</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0 space-y-6 text-foreground/80">
                          <div className="flex items-start space-x-4">
@@ -54,7 +54,7 @@ export default function ContactUsPage() {
                     </CardContent>
                 </div>
                  <div className="bg-primary/5 p-4 sm:p-8">
-                    <h3 className="font-headline text-2xl font-semibold text-foreground mb-4">Send us a Message</h3>
+                    <h3 className="font-headline text-xl sm:text-2xl font-semibold text-foreground mb-4">Send us a Message</h3>
                     <ContactForm />
                 </div>
             </Card>

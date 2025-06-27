@@ -34,7 +34,7 @@ export default function ContactUsPage() {
                                 <Mail className="w-6 h-6 text-primary mt-1 shrink-0" />
                                 <div>
                                     <h3 className="font-semibold text-foreground">Support Email</h3>
-                                    <a href="mailto:support@classic-solution.com" className="hover:text-primary transition-colors">support@classic-solution.com</a>
+                                    <a href="mailto:classicsolutionofficial@gmail.com" className="hover:text-primary transition-colors">classicsolutionofficial@gmail.com</a>
                                 </div>
                             </div>
                              <div className="flex items-start space-x-4">

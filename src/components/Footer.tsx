@@ -78,7 +78,7 @@ export function Footer() {
                   <p>Mumbai-400068</p>
               </Link>
               <p className="pt-1"><a href="tel:+917991317190" className="text-muted-foreground hover:text-primary transition-colors">+91 79913 17190</a></p>
-              <p><a href="mailto:support@classic-solution.com" className="text-muted-foreground hover:text-primary transition-colors">support@classic-solution.com</a></p>
+              <p><a href="mailto:classicsolutionofficial@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">classicsolutionofficial@gmail.com</a></p>
             </address>
           </div>
         </div>

@@ -19,7 +19,7 @@ const SocialLinkItem = ({ href, icon: Icon, label }: { href: string; icon: React
 const PolicyLinkItem = ({ href, icon: Icon, text }: { href: string; icon: React.ElementType; text: string }) => (
   <li>
     <Link href={href} className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors">
-      <Icon className="h-5 w-5 text-primary" />
+      <Icon className="h-5 w-5" />
       <span>{text}</span>
     </Link>
   </li>

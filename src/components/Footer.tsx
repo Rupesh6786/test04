@@ -73,7 +73,7 @@ export function Footer() {
 
           {/* Policies */}
           <div>
-            <h5 className="font-headline text-lg font-semibold text-foreground mb-4">Policies</h5>
+            <h5 className="font-headline text-lg font-semibold text-foreground mb-4">Our Policies</h5>
             <ul className="space-y-2 text-sm">
               <PolicyLinkItem href="/about" icon={Info} text="About Us" />
               <PolicyLinkItem href="/contact" icon={Phone} text="Contact Us" />

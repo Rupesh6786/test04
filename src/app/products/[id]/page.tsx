@@ -15,10 +15,11 @@ import {
 import { Tag, ShieldCheck, CircleDollarSign, CheckCircle, Settings, Star, PackageSearch, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { CardDescription } from '@/components/ui/card';
+import Autoplay from "embla-carousel-autoplay";
 
 
 export default function ProductDetailPage() {
@@ -28,6 +29,10 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const plugin = useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
 
   useEffect(() => {
     if (!productId) {
@@ -95,7 +100,12 @@ export default function ProductDetailPage() {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid md:grid-cols-2 gap-12 items-start">
         
-        <Carousel className="w-full max-w-full shadow-lg">
+        <Carousel
+          plugins={[plugin.current]}
+          className="w-full max-w-full shadow-lg"
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
+        >
           <CarouselContent>
             {product.imageUrls && product.imageUrls.length > 0 ? (
                 product.imageUrls.map((url, index) => (

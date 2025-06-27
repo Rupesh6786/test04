@@ -50,7 +50,7 @@ const productSchema = z.object({
   condition: z.enum(['New', 'Used'], { required_error: 'Condition is required.' }),
   description: z.string().min(10, { message: "Description must be at least 10 characters." }).max(1000, {message: "Description cannot exceed 1000 characters."}),
   category: z.string().min(3, { message: "Category must be at least 3 characters." }),
-  imageUrls: z.array(z.string().url({ message: "Please enter a valid URL." })).min(1, { message: "At least one image is required." }),
+  imageUrls: z.array(z.string().min(1, { message: "Image path cannot be empty." })).min(1, { message: "At least one image is required." }),
   features: z.string().optional(),
   warranty: z.string().optional(),
 });
@@ -156,13 +156,16 @@ export function ProductFormModal({
 
   const handleAddUrl = () => {
     try {
-      z.string().url().parse(urlInput);
+      // Basic check for something that looks like a URL
+      if (!urlInput.startsWith('http') || !urlInput.includes('.')) {
+          throw new Error("Invalid URL format.");
+      }
       append(urlInput);
       setUrlInput("");
     } catch (error) {
       toast({
         title: 'Invalid URL',
-        description: 'Please enter a valid image URL.',
+        description: 'Please enter a valid image URL starting with http/https.',
         variant: 'destructive'
       });
     }

@@ -1,22 +1,22 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ContactForm } from '@/components/ContactForm';
 import { Mail, MapPin, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ContactUsPage() {
     const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storeAddress)}`;
-
+    
   return (
     <div className="bg-muted/40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center mb-12">
                 <h1 className="font-headline text-3xl sm:text-4xl font-semibold text-foreground mb-2">Contact Us</h1>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                We're here to help! Reach out to us with any questions or for service inquiries.
+                We're here to help! Reach out to us with any questions or for service inquiries using the form below.
                 </p>
             </div>
-            <Card className="max-w-4xl mx-auto shadow-lg">
+            <Card className="max-w-6xl mx-auto shadow-lg">
                 <div className="grid md:grid-cols-2">
                     <div className="p-8">
                         <CardHeader className="p-0 mb-6">
@@ -54,12 +54,9 @@ export default function ContactUsPage() {
                             </div>
                         </CardContent>
                     </div>
-                     <div className="bg-primary/10 md:rounded-r-lg flex items-center justify-center p-8">
-                        <Link href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="block text-center group">
-                            <MapPin className="w-16 h-16 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-headline text-xl font-semibold text-foreground mb-2">View on Map</h3>
-                            <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">Click here to get directions to our store.</p>
-                        </Link>
+                     <div className="bg-primary/5 p-8 md:rounded-r-lg">
+                        <h3 className="font-headline text-2xl font-semibold text-foreground mb-4">Send us a Message</h3>
+                        <ContactForm />
                     </div>
                 </div>
             </Card>

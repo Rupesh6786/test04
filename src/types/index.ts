@@ -45,6 +45,16 @@ export interface Offer {
   updatedAt?: Timestamp | Date;
 }
 
+export interface Enquiry {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: Timestamp | Date;
+  status: 'New' | 'Read';
+}
+
 export interface MediaItem {
   id: string;
   type: 'image' | 'video';

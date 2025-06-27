@@ -101,12 +101,12 @@ export default function ProductDetailPage() {
                 product.imageUrls.map((url, index) => (
                 <CarouselItem key={index}>
                     <Card className="overflow-hidden">
-                    <CardContent className="p-0 aspect-square flex items-center justify-center">
+                    <CardContent className="p-0 aspect-[4/3] flex items-center justify-center">
                         <Image
                         src={url}
                         alt={`${product.brand} ${product.model} image ${index + 1}`}
                         width={800}
-                        height={800}
+                        height={600}
                         className="object-cover w-full h-full"
                         priority={index === 0}
                         />
@@ -117,12 +117,12 @@ export default function ProductDetailPage() {
             ) : (
                 <CarouselItem>
                 <Card className="overflow-hidden">
-                    <CardContent className="p-0 aspect-square flex items-center justify-center bg-muted">
+                    <CardContent className="p-0 aspect-[4/3] flex items-center justify-center bg-muted">
                     <Image
-                        src="https://placehold.co/800x800.png"
+                        src="https://placehold.co/800x600.png"
                         alt="Placeholder image"
                         width={800}
-                        height={800}
+                        height={600}
                         className="object-cover w-full"
                     />
                     </CardContent>

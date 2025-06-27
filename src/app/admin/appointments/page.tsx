@@ -348,7 +348,6 @@ export default function AdminAppointmentsPage() {
                         <TableHead onClick={() => requestSort('pricePaid')} className="cursor-pointer hover:bg-muted/50 whitespace-nowrap text-right">
                           Price Paid {getSortIndicator('pricePaid')}
                         </TableHead>
-                        <TableHead className="hidden lg:table-cell whitespace-nowrap">Payment ID</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -391,9 +390,6 @@ export default function AdminAppointmentsPage() {
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-right">
                             {app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}
-                          </TableCell>
-                          <TableCell className="hidden lg:table-cell whitespace-nowrap max-w-[100px] truncate">
-                            {app.paymentId || 'N/A'}
                           </TableCell>
                           <TableCell className="text-right whitespace-nowrap">
                             <DropdownMenu>
@@ -475,9 +471,6 @@ export default function AdminAppointmentsPage() {
                               
                               <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Price</span>
                               <span>{app.pricePaid ? `₹${(app.pricePaid / 100).toFixed(2)}` : 'N/A'}</span>
-
-                              <span className="font-semibold text-muted-foreground flex items-center gap-1.5">Payment ID</span>
-                              <span className="truncate">{app.paymentId || 'N/A'}</span>
                           </div>
                       </CardContent>
                     </Card>

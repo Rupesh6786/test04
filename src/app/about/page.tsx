@@ -34,7 +34,7 @@ export default function AboutUsPage() {
         </div>
         <div className="relative h-80 rounded-lg overflow-hidden shadow-xl">
            <Image
-            src="https://placehold.co/600x400.png"
+            src="/images/about_us.jpg"
             alt="Our dedicated team"
             data-ai-hint="team meeting office"
             fill

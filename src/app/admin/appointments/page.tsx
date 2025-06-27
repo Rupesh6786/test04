@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -53,6 +53,9 @@ import {
   query,
   Timestamp,
   FirestoreError,
+  collectionGroup,
+  onSnapshot,
+  orderBy,
 } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -97,112 +100,68 @@ export default function AdminAppointmentsPage() {
     return email;
   };
 
-  const fetchAllAppointments = useCallback(async () => {
+  // Real-time listener for appointments
+  useEffect(() => {
     if (!currentUser || !isAdmin) {
-      console.warn("AdminAppointmentsPage: Not an admin or no current user. Aborting fetch.");
       setIsLoading(false);
-      setAllAppointments([]);
       return;
     }
     setIsLoading(true);
-    console.log("AdminAppointmentsPage: fetchAllAppointments started.");
-    try {
-      console.time("AdminAppointmentsPage:fetchUsersForAppointmentsPage");
-      const usersCollectionRef = collection(db, "users");
-      const userQuery = query(usersCollectionRef);
-      const usersSnapshot = await getDocs(userQuery);
-      console.timeEnd("AdminAppointmentsPage:fetchUsersForAppointmentsPage");
-      
-      console.log(`AdminAppointmentsPage: User query to '/users' returned ${usersSnapshot.size} documents.`);
-      
-      if (usersSnapshot.empty) {
-        console.log("AdminAppointmentsPage: No users found in the database. No appointments will be fetched.");
-        setAllAppointments([]);
-        setIsLoading(false);
-        return;
-      }
 
-      let appointmentsPromises: Promise<EnrichedAppointment[]>[] = [];
-      console.time("AdminAppointmentsPage:fetchAppointmentsForAllUsers");
-
-      usersSnapshot.forEach((userDoc) => {
-        const userId = userDoc.id;
-        const userDataFromUsersCollection = userDoc.data() as Partial<User>;
-        console.log(`AdminAppointmentsPage: Processing user ID: ${userId}, Data from /users:`, JSON.stringify(userDataFromUsersCollection));
-
-        const appointmentsColRef = collection(db, "users", userId, "appointments");
-        const appointmentsQuery = query(appointmentsColRef);
-        
-        const userAppointmentsPromise = getDocs(appointmentsQuery).then(
-          (appointmentsSnapshot) => {
-            console.log(`AdminAppointmentsPage: User ${userId} has ${appointmentsSnapshot.size} appointments.`);
-            return appointmentsSnapshot.docs.map((appDoc) => {
-              const appData = appDoc.data() as Appointment;
-              const userName = appData.name || userDataFromUsersCollection.displayName || 'N/A';
-              const userEmail = appData.email || userDataFromUsersCollection.email || 'N/A';
-
-              return {
-                ...appData,
-                id: appDoc.id,
-                userName: userName,
-                userEmail: userEmail,
-                originalUserId: userId,
-                createdAt: appData.createdAt instanceof Timestamp ? appData.createdAt.toDate() : (appData.createdAt ? new Date(appData.createdAt as any) : new Date()),
-                bookingDate: appData.bookingDate
-              } as EnrichedAppointment;
-            });
-          }
-        ).catch(subError => {
-          console.error(`AdminAppointmentsPage: Error fetching appointments for user ${userId}:`, subError);
-          let errorDetails = subError instanceof Error ? subError.message : "Unknown error";
-          if (subError instanceof FirestoreError) {
-             errorDetails = `Firestore Error: ${subError.message} (Code: ${subError.code})`;
-          }
-          toast({
-              title: `Error for User ${userId}`,
-              description: `Could not load appointments: ${errorDetails}`,
-              variant: "destructive",
-          });
-          return [];
+    // Fetch all users once to create a lookup map. This is more efficient
+    // than fetching user data repeatedly inside the snapshot listener.
+    const usersCollectionRef = collection(db, "users");
+    getDocs(usersCollectionRef).then(usersSnapshot => {
+        const usersMap = new Map<string, User>();
+        usersSnapshot.forEach(userDoc => {
+            usersMap.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
         });
-        appointmentsPromises.push(userAppointmentsPromise);
-      });
 
-      const appointmentsByUsers = await Promise.all(appointmentsPromises);
-      const fetchedAppointments = appointmentsByUsers.flat();
-      console.timeEnd("AdminAppointmentsPage:fetchAppointmentsForAllUsers");
-      console.log(`AdminAppointmentsPage: Total appointments fetched after processing all users: ${fetchedAppointments.length}`);
-      
-      setAllAppointments(fetchedAppointments);
-    } catch (error: any) {
-      console.error("AdminAppointmentsPage: General error fetching users or processing appointments:", error);
-      console.timeEnd("AdminAppointmentsPage:fetchUsersForAppointmentsPage"); // End timer if error occurred before appointments fetch
-      console.timeEnd("AdminAppointmentsPage:fetchAppointmentsForAllUsers"); // End timer if error occurred during appointments fetch
-      let generalErrorDetails = error instanceof Error ? error.message : "Unknown error";
-      if (error instanceof FirestoreError) {
-        generalErrorDetails = `Firestore Error: ${error.message} (Code: ${error.code})`;
-      }
-      toast({
-          title: "Fetch Error",
-          description: `Could not load data: ${generalErrorDetails}`,
-          variant: "destructive",
-      });
-      setAllAppointments([]);
-    } finally {
-      setIsLoading(false);
-      console.log("AdminAppointmentsPage: fetchAllAppointments completed.");
-    }
+        // Use a collection group query to get all appointments across all users.
+        // This requires a Firestore index. If one doesn't exist, the error
+        // message in the console will provide a link to create it.
+        const appointmentsQuery = query(collectionGroup(db, 'appointments'), orderBy('createdAt', 'desc'));
+        
+        const unsubscribe = onSnapshot(appointmentsQuery, (snapshot) => {
+            const fetchedAppointments = snapshot.docs.map(appDoc => {
+                const appData = appDoc.data() as Appointment;
+                const user = usersMap.get(appData.userId);
+
+                return {
+                    ...appData,
+                    id: appDoc.id,
+                    userName: user?.displayName || appData.name || 'N/A',
+                    userEmail: user?.email || appData.email || 'N/A',
+                    originalUserId: appData.userId,
+                    createdAt: appData.createdAt instanceof Timestamp ? appData.createdAt.toDate() : new Date(appData.createdAt as any),
+                } as EnrichedAppointment;
+            });
+            
+            setAllAppointments(fetchedAppointments);
+            setIsLoading(false); // Set loading to false after first data retrieval
+        }, (error) => {
+            console.error("Real-time appointment fetch error:", error);
+            toast({
+                title: "Real-time Fetch Error",
+                description: "Could not listen for appointment updates. Check console for details. You may need to create a Firestore index.",
+                variant: "destructive",
+            });
+            setIsLoading(false);
+        });
+
+        // Cleanup the listener when the component unmounts
+        return () => unsubscribe();
+    }).catch((error: FirestoreError) => {
+        console.error("Error fetching users for appointment list:", error);
+        toast({
+            title: "User Data Error",
+            description: `Could not load user data needed for appointments: ${error.message}`,
+            variant: "destructive",
+        });
+        setIsLoading(false);
+    });
   }, [currentUser, isAdmin, toast]);
 
-  useEffect(() => {
-    if (currentUser && isAdmin) {
-      fetchAllAppointments();
-    } else {
-        setIsLoading(false);
-        if (!currentUser) console.log("AdminAppointmentsPage Effect: No current user, not fetching.");
-        else if (!isAdmin) console.log("AdminAppointmentsPage Effect: User is not admin, not fetching.");
-    }
-  }, [currentUser, isAdmin, fetchAllAppointments]);
 
   const handleUpdateStatus = async (
     originalUserId: string,
@@ -217,6 +176,7 @@ export default function AdminAppointmentsPage() {
         title: "Status Updated",
         description: `Appointment status changed to ${newStatus}.`,
       });
+      // For immediate UI feedback. The snapshot listener will also update the state.
       setAllAppointments(prev => prev.map(app =>
         app.id === appointmentId && app.originalUserId === originalUserId ? { ...app, status: newStatus } : app
       ));
@@ -325,7 +285,7 @@ export default function AdminAppointmentsPage() {
         <CardHeader>
           <CardTitle>All Service Appointments</CardTitle>
           <CardDescription>
-            View, filter, sort, and manage all customer appointments.
+            View, filter, sort, and manage all customer appointments in real-time.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -350,10 +310,6 @@ export default function AdminAppointmentsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={fetchAllAppointments} disabled={isLoading} className="w-full sm:w-auto">
-              {isLoading && !allAppointments.length ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Refresh Data
-            </Button>
           </div>
           <div className="overflow-x-auto">
             {isLoading && !allAppointments.length ? (
@@ -366,10 +322,7 @@ export default function AdminAppointmentsPage() {
                 <ListChecks className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-2 text-lg font-medium text-foreground">No appointments found</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  There are no appointments matching your current filters, no users have appointments, or no users were found.
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Check console logs for details on user and appointment fetching.
+                  There are no appointments matching your current filters or no appointments have been made yet.
                 </p>
               </div>
             ) : (

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
@@ -78,6 +77,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const IconMap: { [key: string]: React.ElementType } = {
   Wind, ThermometerSun, Pipette, Settings, Unplug, Wrench, Cpu, Replace, PackagePlus, Cog, Default: Wrench,
@@ -408,5 +408,3 @@ export default function AdminServicesPage() {
     </div>
   );
 }
-
-    

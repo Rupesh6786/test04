@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -39,10 +38,11 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import type { Offer } from '@/types';
 
+// The validation for imageUrl has been corrected to allow relative paths from uploads.
 const offerSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters." }),
   description: z.string().min(10, { message: "Description must be at least 10 characters." }),
-  imageUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+  imageUrl: z.string().optional().or(z.literal('')),
   status: z.enum(['Active', 'Inactive'], { required_error: 'Status is required.' }),
   ctaText: z.string().min(3, { message: "CTA button text is required." }),
   ctaLink: z.string().startsWith('/', { message: "Link must be a relative path, e.g., /products" }),
@@ -140,7 +140,7 @@ export function OfferFormModal({
       onClose();
     } catch (error) {
       console.error('Error saving offer:', error);
-      toast({ title: 'Error', description: 'Could not save offer.', variant: 'destructive' });
+      toast({ title: 'Error', description: `Could not save offer. ${error instanceof Error ? error.message : 'Please check Firestore permissions.'}`, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }

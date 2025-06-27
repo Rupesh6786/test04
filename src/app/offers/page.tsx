@@ -9,7 +9,7 @@ import { Tag, CalendarDays, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Offer } from '@/types';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, Unsubscribe, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 export default function OffersPage() {
@@ -20,11 +20,9 @@ export default function OffersPage() {
   useEffect(() => {
     setIsLoading(true);
     const offersColRef = collection(db, "offers");
-    const q = query(
-      offersColRef, 
-      where("status", "==", "Active"),
-      orderBy("createdAt", "desc")
-    );
+    // Simplified query to fetch all documents first, then filter on the client.
+    // This can help bypass Firestore security rules that are strict on complex queries.
+    const q = query(offersColRef);
 
     const unsubscribe: Unsubscribe = onSnapshot(
       q,
@@ -37,7 +35,17 @@ export default function OffersPage() {
             createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
           } as Offer;
         });
-        setOffers(fetchedOffers);
+
+        // Filter for active offers and sort by date on the client side
+        const activeAndSortedOffers = fetchedOffers
+          .filter(offer => offer.status === 'Active')
+          .sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA; // Sort descending (newest first)
+          });
+        
+        setOffers(activeAndSortedOffers);
         setIsLoading(false);
       },
       (error) => {

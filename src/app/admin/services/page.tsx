@@ -348,7 +348,6 @@ export default function AdminServicesPage() {
                            </div>
                            <div className="flex gap-2">
                              <Button variant="outline" size="sm" onClick={() => handleEditService(service)}><Edit className="mr-2 h-4 w-4"/>Edit</Button>
-                             <Button variant="destructive" size="sm" onClick={() => handleDeleteService(service)}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
                            </div>
                         </CardFooter>
                     </Card>
@@ -409,5 +408,3 @@ export default function AdminServicesPage() {
     </div>
   );
 }
-
-    

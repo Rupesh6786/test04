@@ -37,6 +37,12 @@ export function Footer() {
             <p className="text-muted-foreground text-sm">
               Classic-Solution is your trusted partner for quality second-hand ACs and expert services. We aim to provide affordable and reliable cooling solutions.
             </p>
+            <div className="mt-4 flex space-x-4">
+              <SocialLinkItem href="https://www.facebook.com/share/1Bka82yYBn/" icon={Facebook} label="Facebook" />
+              <SocialLinkItem href="https://www.instagram.com/classic_solution_official/" icon={Instagram} label="Instagram" />
+              <SocialLinkItem href="https://www.linkedin.com/in/gulam-mainuddin-khan-79913mk" icon={Linkedin} label="LinkedIn" />
+              <SocialLinkItem href="https://x.com/GulamKh31049008" icon={Twitter} label="Twitter" />
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -46,11 +52,23 @@ export function Footer() {
               <QuickLinkItem href="/products">Products</QuickLinkItem>
               <QuickLinkItem href="/services">Services</QuickLinkItem>
               <QuickLinkItem href="/offers">Offers</QuickLinkItem>
-              <QuickLinkItem href="/#why-choose-us">Why Choose Us</QuickLinkItem>
+              <QuickLinkItem href="/media">Media Gallery</QuickLinkItem>
               <QuickLinkItem href="/locate-store">Locate Store</QuickLinkItem>
             </ul>
           </div>
 
+          {/* Policies */}
+          <div>
+            <h5 className="font-headline text-lg font-semibold text-foreground mb-4">Policies</h5>
+            <ul className="space-y-2 text-sm">
+                <QuickLinkItem href="/about">About Us</QuickLinkItem>
+                <QuickLinkItem href="/contact">Contact Us</QuickLinkItem>
+                <QuickLinkItem href="/shipping-policy">Shipping Policy</QuickLinkItem>
+                <QuickLinkItem href="/terms-and-conditions">Terms & Conditions</QuickLinkItem>
+                <QuickLinkItem href="/cancellations-and-refunds">Cancellations & Refunds</QuickLinkItem>
+            </ul>
+          </div>
+          
           {/* Contact Info */}
           <div>
             <h5 className="font-headline text-lg font-semibold text-foreground mb-4">Contact Info</h5>
@@ -60,25 +78,8 @@ export function Footer() {
                   <p>Mumbai-400068</p>
               </Link>
               <p className="pt-1"><a href="tel:+917991317190" className="text-muted-foreground hover:text-primary transition-colors">+91 79913 17190</a></p>
-              <p><a href="mailto:classicsolutionofficial@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">classicsolutionofficial@gmail.com</a></p>
+              <p><a href="mailto:support@classic-solution.com" className="text-muted-foreground hover:text-primary transition-colors">support@classic-solution.com</a></p>
             </address>
-            <div className="mt-4 flex space-x-4">
-              <SocialLinkItem href="https://www.facebook.com/share/1Bka82yYBn/" icon={Facebook} label="Facebook" />
-              <SocialLinkItem href="https://www.instagram.com/classic_solution_official/" icon={Instagram} label="Instagram" />
-              <SocialLinkItem href="https://www.linkedin.com/in/gulam-mainuddin-khan-79913mk" icon={Linkedin} label="LinkedIn" />
-              <SocialLinkItem href="https://x.com/GulamKh31049008" icon={Twitter} label="Twitter" />
-            </div>
-          </div>
-          
-          {/* Trust Badges */}
-          <div>
-            <h5 className="font-headline text-lg font-semibold text-foreground mb-4">Our Commitment</h5>
-            <div className="space-y-3 text-sm">
-              <TrustBadgeItem icon={ShieldCheck} text="Secure Payments" />
-              <TrustBadgeItem icon={Award} text="Certified Technicians" />
-              <TrustBadgeItem icon={Users} text="Customer Satisfaction" />
-              <TrustBadgeItem icon={MapPin} text="Easy Store Locator" />
-            </div>
           </div>
         </div>
 

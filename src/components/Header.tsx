@@ -14,6 +14,7 @@ const navItems = [
   { href: '/services', label: 'Services' },
   { href: '/offers', label: 'Offers' },
   { href: '/media', label: 'Media' },
+  { href: '/about', label: 'About Us' },
   { href: '/locate-store', label: 'Locate a Store' },
 ];
 

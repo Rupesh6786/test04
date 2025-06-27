@@ -17,7 +17,7 @@ export default function ContactUsPage() {
                 </p>
             </div>
             <Card className="max-w-6xl mx-auto shadow-lg grid md:grid-cols-2 overflow-hidden">
-                <div className="p-6 sm:p-8">
+                <div className="p-4 sm:p-8">
                     <CardHeader className="p-0 mb-6">
                         <CardTitle className="font-headline text-2xl">Get in Touch</CardTitle>
                     </CardHeader>
@@ -53,7 +53,7 @@ export default function ContactUsPage() {
                         </div>
                     </CardContent>
                 </div>
-                 <div className="bg-primary/5 p-6 sm:p-8">
+                 <div className="bg-primary/5 p-4 sm:p-8">
                     <h3 className="font-headline text-2xl font-semibold text-foreground mb-4">Send us a Message</h3>
                     <ContactForm />
                 </div>

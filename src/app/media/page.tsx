@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -52,8 +53,8 @@ const mediaItems: MediaItem[] = [
   {
     id: '6',
     type: 'video',
-    src: 'https://www.youtube.com/embed/I-D3_r5E4bI',
-    thumbnail: 'https://img.youtube.com/vi/I-D3_r5E4bI/hqdefault.jpg',
+    src: 'https://www.youtube.com/embed/A6wYjAnrqT0',
+    thumbnail: 'https://img.youtube.com/vi/A6wYjAnrqT0/hqdefault.jpg',
     title: 'Why Choose Classic-Solution?',
     description: 'Hear from our founder about our commitment to quality.',
     aiHint: 'company presentation',

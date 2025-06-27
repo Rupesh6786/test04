@@ -33,11 +33,16 @@ export interface Service {
 }
 
 export interface Offer {
-  id:string;
+  id: string;
   title: string;
   description: string;
   imageUrl?: string;
   aiHint?: string;
+  status: 'Active' | 'Inactive';
+  ctaText: string;
+  ctaLink: string;
+  createdAt?: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
 }
 
 export interface MediaItem {

@@ -140,8 +140,6 @@ export default function ProductDetailPage() {
                 </CarouselItem>
             )}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
         </Carousel>
 
         <div className="space-y-6">

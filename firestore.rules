@@ -1,82 +1,70 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // --- Helper Functions ---
-    // Checks if the requesting user's UID is in the list of admin UIDs.
+    
+    // Helper function to check for admin status
     function isAdmin() {
-      return request.auth != null && request.auth.uid in ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"];
+      // The admin UIDs are hardcoded here.
+      // Make sure this list matches the one in your AuthContext.
+      let adminUIDs = ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"];
+      return request.auth != null && request.auth.uid in adminUIDs;
     }
 
-    // Checks if a user is authenticated.
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Checks if the authenticated user is the owner of the document,
-    // by comparing their UID with the userId from the document path.
+    // Helper function to check if the user is the owner of the document
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return request.auth != null && request.auth.uid == userId;
     }
 
-
-    // --- Public Collections ---
-    // Products can be read by anyone, but only created, updated, or deleted by admins.
+    // Products collection can be read by anyone, but only written by admins.
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-
-    // Services can be read by anyone, but only created, updated, or deleted by admins.
+    
+    // Services collection can be read by anyone, but only written by admins.
     match /services/{serviceId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-
     
-    // --- Users Collection & Subcollections ---
+    // Offers collection can be read by anyone, but only written by admins.
+    match /offers/{offerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Users collection rules
     match /users/{userId} {
-      // CREATE: A user can create their own user document upon registration.
-      // The document ID must match their UID.
+      // Admins can read any user document.
+      // Users can read their own document.
+      allow read: if isAdmin() || isOwner(userId);
+      
+      // An admin can update any user document (e.g., accountStatus).
+      // A user can update their own document (e.g., displayName, phone).
+      allow update: if isAdmin() || isOwner(userId);
+      
+      // Anyone can create a user document (for new sign-ups),
+      // as long as the document UID matches their auth UID.
       allow create: if isOwner(userId);
 
-      // READ: Users can get their own profile. Admins can get any profile and list all users.
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-
-      // UPDATE: Users can update their own profile (e.g., displayName).
-      allow update: if isOwner(userId);
-
-      // DELETE: Disallowed to prevent accidental data loss.
+      // Deleting user documents is disallowed for safety.
       allow delete: if false;
-    }
 
-    match /users/{userId}/addresses/{addressId} {
-      // A user can fully manage their own addresses. Admins cannot access them directly.
-      allow read, write: if isOwner(userId);
-    }
-    
-    match /users/{userId}/appointments/{appointmentId} {
-      // CREATE: A user can create their own appointments.
-      allow create: if isOwner(userId);
-
-      // READ: A user can read their own appointments. An admin can read any appointment.
-      allow read: if isOwner(userId) || isAdmin();
-
-      // UPDATE: A user can update their own appointment (e.g., for payment). 
-      // An admin can update any appointment (e.g., to change its status).
-      allow update: if isOwner(userId) || isAdmin();
-
-      // DELETE: Disallowed to prevent accidental data loss.
-      allow delete: if false;
-    }
-    
-    // This separate rule is required for the admin dashboard and appointments page 
-    // to perform a 'collectionGroup' query across all users' appointments.
-    match /{path=**}/appointments/{appointmentId} {
-      allow get, list: if isAdmin();
+      // Addresses and Appointments subcollections
+      match /addresses/{addressId} {
+        // Admins can read any user's addresses.
+        // Users can read/write their own addresses.
+        allow read: if isAdmin() || isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+      
+      match /appointments/{appointmentId} {
+        // Admins can read any user's appointments.
+        // Users can read/write their own appointments.
+        allow read: if isAdmin() || isOwner(userId);
+        allow write: if isOwner(userId);
+      }
     }
   }
 }

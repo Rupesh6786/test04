@@ -20,7 +20,7 @@ const mediaItems: MediaItem[] = [
   {
     id: '2',
     type: 'image',
-    src: 'https://placehold.co/600x400.png',
+    src: '/images/happy_customer.jpg',
     title: 'Happy Customer Testimonial',
     description: 'A satisfied customer with their newly serviced AC.',
     aiHint: 'happy customer air conditioner',
@@ -37,7 +37,7 @@ const mediaItems: MediaItem[] = [
   {
     id: '4',
     type: 'image',
-    src: 'https://placehold.co/600x400.png',
+    src: '/images/media_range_of_ac.jpg',
     title: 'Our Range of Used ACs',
     description: 'A Glimpse of our quality-checked second-hand AC units.',
     aiHint: 'air conditioner showroom',
@@ -45,7 +45,7 @@ const mediaItems: MediaItem[] = [
   {
     id: '5',
     type: 'image',
-    src: 'https://placehold.co/600x400.png',
+    src: '/images/media_technician.jpg',
     title: 'Expert Technician at Work',
     description: 'Our certified technician diagnosing an AC issue.',
     aiHint: 'ac technician service',

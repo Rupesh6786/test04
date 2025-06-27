@@ -55,7 +55,6 @@ import {
   FirestoreError,
   collectionGroup,
   onSnapshot,
-  orderBy,
 } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -118,12 +117,12 @@ export default function AdminAppointmentsPage() {
         });
 
         // Use a collection group query to get all appointments across all users.
-        // This requires a Firestore index. If one doesn't exist, the error
-        // message in the console will provide a link to create it.
-        const appointmentsQuery = query(collectionGroup(db, 'appointments'), orderBy('createdAt', 'desc'));
+        // This is more efficient than fetching from each user individually.
+        // Sorting is done on the client-side to avoid needing a composite index.
+        const appointmentsQuery = query(collectionGroup(db, 'appointments'));
         
         const unsubscribe = onSnapshot(appointmentsQuery, (snapshot) => {
-            const fetchedAppointments = snapshot.docs.map(appDoc => {
+            let fetchedAppointments = snapshot.docs.map(appDoc => {
                 const appData = appDoc.data() as Appointment;
                 const user = usersMap.get(appData.userId);
 
@@ -137,13 +136,20 @@ export default function AdminAppointmentsPage() {
                 } as EnrichedAppointment;
             });
             
+            // Sort by creation date descending (newest first) on the client
+            fetchedAppointments.sort((a, b) => {
+                const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+                const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+                return dateB - dateA;
+            });
+
             setAllAppointments(fetchedAppointments);
             setIsLoading(false); // Set loading to false after first data retrieval
         }, (error) => {
             console.error("Real-time appointment fetch error:", error);
             toast({
                 title: "Real-time Fetch Error",
-                description: "Could not listen for appointment updates. Check console for details. You may need to create a Firestore index.",
+                description: "Could not listen for appointment updates. Check console for details and Firestore rules.",
                 variant: "destructive",
             });
             setIsLoading(false);

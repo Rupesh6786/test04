@@ -295,7 +295,7 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Image
-                  src={product.imageUrl}
+                  src={product.imageUrls[0]}
                   alt={`${product.brand} ${product.model}`}
                   width={80}
                   height={60}

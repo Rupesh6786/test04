@@ -4,13 +4,22 @@
 import type { Product } from '@/types';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 import { Tag, ShieldCheck, CircleDollarSign, CheckCircle, Settings, Star, PackageSearch, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { CardDescription } from '@/components/ui/card';
+
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -85,18 +94,45 @@ export default function ProductDetailPage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid md:grid-cols-2 gap-12 items-start">
-        <Card className="overflow-hidden shadow-lg">
-          <CardContent className="p-0">
-            <Image
-              src={product.imageUrl}
-              alt={`${product.brand} ${product.model}`}
-              width={800}
-              height={600}
-              className="object-cover w-full"
-              priority
-            />
-          </CardContent>
-        </Card>
+        
+        <Carousel className="w-full max-w-full shadow-lg">
+          <CarouselContent>
+            {product.imageUrls && product.imageUrls.length > 0 ? (
+                product.imageUrls.map((url, index) => (
+                <CarouselItem key={index}>
+                    <Card className="overflow-hidden">
+                    <CardContent className="p-0 aspect-video flex items-center justify-center">
+                        <Image
+                        src={url}
+                        alt={`${product.brand} ${product.model} image ${index + 1}`}
+                        width={800}
+                        height={600}
+                        className="object-cover w-full h-full"
+                        priority={index === 0}
+                        />
+                    </CardContent>
+                    </Card>
+                </CarouselItem>
+                ))
+            ) : (
+                <CarouselItem>
+                <Card className="overflow-hidden">
+                    <CardContent className="p-0 aspect-square flex items-center justify-center bg-muted">
+                    <Image
+                        src="https://placehold.co/800x600.png"
+                        alt="Placeholder image"
+                        width={800}
+                        height={600}
+                        className="object-cover w-full"
+                    />
+                    </CardContent>
+                </Card>
+                </CarouselItem>
+            )}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
 
         <div className="space-y-6">
           <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 text-sm font-medium rounded-full">

@@ -9,7 +9,7 @@ export interface Product {
   capacity: string;
   stock: number;
   condition: "New" | "Used";
-  imageUrl: string;
+  imageUrls: string[];
   description: string;
   category: string;
   features?: string;

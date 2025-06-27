@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -33,12 +33,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import type { Product } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Image from 'next/image';
 
 const productSchema = z.object({
   brand: z.string().min(2, { message: "Brand must be at least 2 characters." }),
@@ -49,7 +50,7 @@ const productSchema = z.object({
   condition: z.enum(['New', 'Used'], { required_error: 'Condition is required.' }),
   description: z.string().min(10, { message: "Description must be at least 10 characters." }).max(1000, {message: "Description cannot exceed 1000 characters."}),
   category: z.string().min(3, { message: "Category must be at least 3 characters." }),
-  imageUrl: z.string().min(1, { message: "An image URL is required. Please upload a file or provide a URL." }),
+  imageUrls: z.array(z.string().url({ message: "Please enter a valid URL." })).min(1, { message: "At least one image is required." }),
   features: z.string().optional(),
   warranty: z.string().optional(),
 });
@@ -73,42 +74,36 @@ export function ProductFormModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [urlInput, setUrlInput] = useState("");
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       brand: '', model: '', capacity: '', price: 0, stock: 0,
-      condition: 'Used', description: '', category: '', imageUrl: '',
+      condition: 'Used', description: '', category: '', imageUrls: [],
       features: '', warranty: '',
     },
+  });
+  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "imageUrls",
   });
 
   useEffect(() => {
     if (productToEdit) {
-      form.reset({ ...productToEdit, features: productToEdit.features || '', warranty: productToEdit.warranty || '' });
-      setPreviewUrl(productToEdit.imageUrl);
+      form.reset({ ...productToEdit, features: productToEdit.features || '', warranty: productToEdit.warranty || '', imageUrls: productToEdit.imageUrls || [] });
     } else {
       form.reset({
         brand: '', model: '', capacity: '', price: 0, stock: 0,
-        condition: 'Used', description: '', category: '', imageUrl: '',
+        condition: 'Used', description: '', category: '', imageUrls: [],
         features: '', warranty: '',
       });
-      setPreviewUrl(null);
     }
     setSelectedFile(null);
+    setUrlInput("");
   }, [productToEdit, form, isOpen]);
 
-  useEffect(() => {
-    if (!selectedFile) {
-      if (!form.getValues('imageUrl')) setPreviewUrl(null);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setPreviewUrl(objectUrl);
-    form.setValue('imageUrl', '', { shouldValidate: true }); // Clear URL field to avoid confusion
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [selectedFile, form]);
 
   const handleUpload = async () => {
     if (!selectedFile) {
@@ -132,14 +127,12 @@ export function ProductFormModal({
         throw new Error(result.error || 'File upload failed');
       }
 
-      const imageUrl = result.path;
-      form.setValue('imageUrl', imageUrl, { shouldValidate: true });
-      setPreviewUrl(imageUrl);
+      append(result.path);
       setSelectedFile(null);
 
       toast({
         title: 'Upload Successful',
-        description: 'Image has been uploaded and the path is set.',
+        description: 'Image has been added to the list.',
       });
     } catch (error) {
       console.error('Upload error:', error);
@@ -158,25 +151,22 @@ export function ProductFormModal({
       setSelectedFile(event.target.files[0]);
     }
   };
+
+  const handleAddUrl = () => {
+    try {
+      z.string().url().parse(urlInput);
+      append(urlInput);
+      setUrlInput("");
+    } catch (error) {
+      toast({
+        title: 'Invalid URL',
+        description: 'Please enter a valid image URL.',
+        variant: 'destructive'
+      });
+    }
+  };
   
   const onSubmit = async (data: ProductFormValues) => {
-    if (selectedFile && !data.imageUrl) {
-        toast({
-            title: 'Image Not Processed',
-            description: 'Please click the "Upload" button to handle the image before saving.',
-            variant: 'destructive',
-        });
-        return;
-    }
-    if (!data.imageUrl) {
-        toast({
-            title: 'Image URL is Missing',
-            description: 'Please provide an image URL or upload a file.',
-            variant: 'destructive',
-        });
-        return;
-    }
-
     setIsSubmitting(true);
     try {
       const productData = { ...data, updatedAt: serverTimestamp() };
@@ -204,7 +194,7 @@ export function ProductFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90svh] overflow-y-auto p-6">
+      <DialogContent className="sm:max-w-3xl max-h-[90svh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle>{productToEdit ? 'Edit Product' : 'Add New Product'}</DialogTitle>
           <DialogDescription>{productToEdit ? 'Update the details of this AC unit.' : 'Enter the details for the new AC unit.'}</DialogDescription>
@@ -227,7 +217,7 @@ export function ProductFormModal({
               <FormField control={form.control} name="condition" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Condition</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select condition" /></SelectTrigger></FormControl>
                     <SelectContent><SelectItem value="New">New</SelectItem><SelectItem value="Used">Used</SelectItem></SelectContent>
                   </Select>
@@ -241,60 +231,81 @@ export function ProductFormModal({
             <FormField control={form.control} name="features" render={({ field }) => ( <FormItem><FormLabel>Features (Optional)</FormLabel><FormControl><Textarea placeholder="Comma-separated features..." {...field} rows={3} /></FormControl><ShadFormDescription>Enter key features separated by commas.</ShadFormDescription><FormMessage /></FormItem> )} />
             
             <FormItem>
-              <FormLabel>Product Image</FormLabel>
-              <Tabs defaultValue="url" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="url">From URL</TabsTrigger>
-                  <TabsTrigger value="upload">Upload File</TabsTrigger>
-                </TabsList>
-                <TabsContent value="url" className="pt-2">
-                  <FormField
+              <FormLabel>Product Images</FormLabel>
+              <div className="p-4 border rounded-md">
+                <Tabs defaultValue="upload" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upload">Upload File</TabsTrigger>
+                    <TabsTrigger value="url">From URL</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="upload" className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        id="file-upload"
+                        type="file"
+                        accept="image/png, image/jpeg, image/webp"
+                        onChange={handleFileChange}
+                        className="flex-grow"
+                      />
+                      <Button type="button" onClick={handleUpload} disabled={!selectedFile || isUploading}>
+                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Plus className="mr-2 h-4 w-4" />} Add
+                      </Button>
+                    </div>
+                    <ShadFormDescription className="mt-2">Upload an image and click "Add" to include it in the list.</ShadFormDescription>
+                  </TabsContent>
+                  <TabsContent value="url" className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        placeholder="https://example.com/image.png"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                      />
+                       <Button type="button" onClick={handleAddUrl} disabled={!urlInput}>
+                        <Plus className="mr-2 h-4 w-4" /> Add
+                      </Button>
+                    </div>
+                    <ShadFormDescription className="mt-2">Paste an image URL and click "Add".</ShadFormDescription>
+                  </TabsContent>
+                </Tabs>
+
+                <FormField
                     control={form.control}
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input 
-                            placeholder="https://example.com/image.png"
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e);
-                              setPreviewUrl(e.target.value);
-                              setSelectedFile(null);
-                            }}
-                          />
-                        </FormControl>
-                        <ShadFormDescription>Direct URL to the product image.</ShadFormDescription>
-                        <FormMessage />
-                      </FormItem>
+                    name="imageUrls"
+                    render={() => (
+                        <FormItem className="mt-4">
+                            {fields.length > 0 && (
+                                <>
+                                    <FormLabel>Image Previews</FormLabel>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-2">
+                                        {fields.map((field, index) => (
+                                            <div key={field.id} className="relative group">
+                                                <Image
+                                                    src={field.value}
+                                                    alt={`Product image ${index + 1}`}
+                                                    width={150}
+                                                    height={150}
+                                                    className="rounded-md object-cover aspect-square border"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => remove(index)}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                            <FormMessage />
+                        </FormItem>
                     )}
-                  />
-                </TabsContent>
-                <TabsContent value="upload" className="pt-2">
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      type="file"
-                      accept="image/png, image/jpeg, image/webp"
-                      onChange={handleFileChange}
-                      className="flex-grow"
-                    />
-                    <Button type="button" onClick={handleUpload} disabled={!selectedFile || isUploading}>
-                      {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null} Upload
-                    </Button>
-                  </div>
-                  <ShadFormDescription>Upload an image from your device. Click "Upload" before saving.</ShadFormDescription>
-                </TabsContent>
-              </Tabs>
+                />
+              </div>
             </FormItem>
-            
-            {previewUrl && (
-               <div>
-                  <FormLabel>Image Preview</FormLabel>
-                  <div className="mt-2 w-full aspect-video relative bg-muted rounded-md overflow-hidden flex items-center justify-center border">
-                    <img src={previewUrl} alt="Product Preview" className="object-contain max-w-full max-h-full" />
-                  </div>
-               </div>
-            )}
             
             <DialogFooter className="pt-4">
               <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button></DialogClose>

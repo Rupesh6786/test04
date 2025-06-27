@@ -18,7 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardHeader className="p-0 relative">
         <Link href={`/products/${product.id}`} aria-label={`View details for ${product.brand} ${product.model}`}>
           <Image
-            src={product.imageUrl || "https://placehold.co/400x300.png"} // Fallback image
+            src={product.imageUrls?.[0] || "https://placehold.co/400x300.png"} // Fallback image
             alt={`${product.brand} ${product.model}`}
             width={400}
             height={300}

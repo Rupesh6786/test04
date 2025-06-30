@@ -1,55 +1,106 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check for admin role
+
+    // Helper functions
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
     function isAdmin() {
+      // UIDs of users with admin privileges
       return request.auth.uid in ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"];
     }
 
-    // Products: Publicly readable, admin-only write.
-    // Exception: Any logged-in user can decrement stock by 1 during a purchase transaction.
-    match /products/{productId} {
-      allow read: if true;
-      allow create, delete: if isAdmin();
-      allow update: if isAdmin() || 
-                       (request.auth != null &&
-                        request.resource.data.stock == resource.data.stock - 1 &&
-                        // Ensure only the stock is being changed during a user transaction.
-                        request.resource.data.diff(resource.data).affectedKeys.hasOnly(['stock']));
+    function isUserUpdatingStock(product) {
+        // This function checks that a user update to a product document
+        // ONLY decrements the stock by 1, and changes nothing else.
+        return request.resource.data.stock == product.stock - 1 &&
+               request.resource.data.diff(product).affectedKeys().hasOnly(['stock']);
     }
 
-    // Users: Users can read/write their own data. Admins can read anyone's data.
+    // Users collection
     match /users/{userId} {
-      allow read, update, write: if request.auth.uid == userId || isAdmin();
-      
-      // Subcollections: Only the user or an admin can access these.
-      match /appointments/{appointmentId} {
-        allow read, write: if request.auth.uid == userId || isAdmin();
-      }
+      // Users can read their own data, admins can read any user's data
+      allow read: if isOwner(userId) || isAdmin();
+      // Users can create their own user document upon registration
+      allow create: if isOwner(userId);
+      // Users can update specific fields on their own profile. Admins can update account status.
+      allow update: if (isOwner(userId) && request.resource.data.keys().hasAll(['displayName', 'phone'])) ||
+                       (isAdmin() && request.resource.data.keys().hasOnly(['accountStatus']));
+
+      // Addresses subcollection
       match /addresses/{addressId} {
-        allow read, write: if request.auth.uid == userId || isAdmin();
+        allow read, create, update, delete: if isOwner(userId) || isAdmin();
       }
+
+      // Appointments subcollection
+      match /appointments/{appointmentId} {
+        allow read, create: if isOwner(userId) || isAdmin();
+        // Users can update payment status, Admins can update any field.
+        allow update: if (isOwner(userId) && request.resource.data.keys().hasOnly(['status', 'paymentId', 'pricePaid'])) || isAdmin();
+        allow delete: if isAdmin();
+      }
+      
+      // Orders subcollection
       match /orders/{orderId} {
-        allow read, write: if request.auth.uid == userId || isAdmin();
+          // Allow creation only by the owner, with correctly structured data
+          allow create: if isOwner(userId) &&
+                           request.resource.data.userId == userId &&
+                           request.resource.data.createdAt == request.time &&
+                           (
+                             ( // Case for Cash on Delivery
+                               request.resource.data.paymentMethod == 'COD' &&
+                               request.resource.data.status == 'Placed' &&
+                               request.resource.data.pricePaid == 0
+                             ) ||
+                             ( // Case for successful Online Payment
+                               request.resource.data.paymentMethod == 'Online' &&
+                               request.resource.data.status == 'Confirmed' &&
+                               request.resource.data.pricePaid > 0 &&
+                               request.resource.data.paymentId is string
+                             )
+                           );
+
+          allow read: if isOwner(userId) || isAdmin();
+          // Only admins can update or delete orders after they are placed
+          allow update, delete: if isAdmin();
       }
     }
+
+    // Products collection
+    match /products/{productId} {
+      // Anyone can read products
+      allow read: if true;
+
+      // Allow a logged-in user to update a product ONLY if they are decrementing stock by 1 for a purchase.
+      // Admins have full update permissions.
+      allow update: if (request.auth != null && isUserUpdatingStock(resource.data)) || isAdmin();
+
+      // Only admins can create or delete products
+      allow create, delete: if isAdmin();
+    }
     
-    // Services, Offers: Read for all, write for admin.
+    // Services collection (Publicly readable, admin writable)
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
     
+    // Offers collection (Publicly readable, admin writable)
     match /offers/{offerId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
-    
-    // Enquiries: Allow anyone to create (submit form), admin to manage.
+
+    // Enquiries collection (Publicly writable, admin only for R/U/D)
     match /enquiries/{enquiryId} {
-      allow create: if true;
-      allow read, update, delete: if isAdmin();
+        // Anyone can create an enquiry
+        allow create: if true;
+        // Only admins can read, update status, or delete
+        allow read, update, delete: if isAdmin();
     }
   }
 }

@@ -34,8 +34,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'No file provided.' }, { status: 400 });
   }
 
-  // Sanitize the filename to prevent directory traversal attacks
-  const filename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  // Sanitize the filename and make it unique to prevent overwrites
+  const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const uniqueFilename = `${Date.now()}_${sanitizedFilename}`;
+
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
@@ -43,11 +45,11 @@ export async function POST(request: NextRequest) {
     const imagesDir = join(process.cwd(), 'public', 'images');
     await ensureDirExists(imagesDir);
 
-    const path = join(imagesDir, filename);
+    const path = join(imagesDir, uniqueFilename);
     await writeFile(path, buffer);
     
     console.log(`File uploaded to: ${path}`);
-    const publicPath = `/images/${filename}`;
+    const publicPath = `/images/${uniqueFilename}`;
     return NextResponse.json({ success: true, path: publicPath });
 
   } catch (error) {

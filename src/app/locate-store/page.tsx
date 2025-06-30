@@ -40,8 +40,8 @@ export default function LocateStorePage() {
               <p className="text-foreground/80">Sunday: 10:00 AM - 4:00 PM</p>
             </div>
             <div className="space-y-2 pt-2">
-              <a href="tel:+919821806461" className="flex items-center text-accent hover:underline">
-                <Phone className="w-5 h-5 mr-2" /> +91 98218 06461
+              <a href="tel:+917991317190" className="flex items-center text-accent hover:underline">
+                <Phone className="w-5 h-5 mr-2" /> +91 79913 17190
               </a>
               <a href="mailto:classicsolutionofficial@gmail.com" className="flex items-center text-accent hover:underline">
                 <Mail className="w-5 h-5 mr-2" /> classicsolutionofficial@gmail.com

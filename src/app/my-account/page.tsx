@@ -558,59 +558,6 @@ export default function MyAccountPage() {
         </Card>
       </div>
 
-       <Card className="mt-8">
-          <CardHeader className="flex flex-row justify-between items-center">
-            <div className="flex items-center">
-              <Building2 className="mr-2 h-6 w-6 text-primary" />
-              <CardTitle>Address Book</CardTitle>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleAddNewAddress}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Address
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {isLoadingAddresses && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="ml-2 text-muted-foreground">Loading addresses...</p>
-              </div>
-            )}
-            {!isLoadingAddresses && addresses.length === 0 && (
-              <p className="text-muted-foreground">You have no saved addresses.</p>
-            )}
-            {!isLoadingAddresses && addresses.length > 0 && (
-              <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-                {addresses.map(address => (
-                  <Card key={address.id} className="bg-background/50">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center">
-                        {getAddressIcon(address.type)}
-                        {address.type} Address
-                        {address.isDefault && <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Default</span>}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm text-muted-foreground space-y-0.5">
-                      <p>{address.line1}</p>
-                      {address.line2 && <p>{address.line2}</p>}
-                      <p>{address.city}, {address.state} {address.zipCode}</p>
-                      <p>{address.country}</p>
-                    </CardContent>
-                    <CardFooter className="pt-2 space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditAddress(address.id)}>
-                        <Pencil className="mr-1 h-3 w-3" /> Edit
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDeleteAddress(address)} disabled={isDeletingAddress && addressToDelete?.id === address.id}>
-                        {isDeletingAddress && addressToDelete?.id === address.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin"/> : <Trash2 className="mr-1 h-3 w-3" />}
-                        Delete
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        
         <Card className="mt-8">
           <CardHeader>
             <CardTitle className="flex items-center"><Package className="mr-2 h-6 w-6 text-primary" /> My Orders</CardTitle>
@@ -668,6 +615,59 @@ export default function MyAccountPage() {
           </CardContent>
         </Card>
 
+       <Card className="mt-8">
+          <CardHeader className="flex flex-row justify-between items-center">
+            <div className="flex items-center">
+              <Building2 className="mr-2 h-6 w-6 text-primary" />
+              <CardTitle>Address Book</CardTitle>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleAddNewAddress}>
+              <PlusCircle className="mr-2 h-4 w-4" /> Add New Address
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isLoadingAddresses && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-2 text-muted-foreground">Loading addresses...</p>
+              </div>
+            )}
+            {!isLoadingAddresses && addresses.length === 0 && (
+              <p className="text-muted-foreground">You have no saved addresses.</p>
+            )}
+            {!isLoadingAddresses && addresses.length > 0 && (
+              <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
+                {addresses.map(address => (
+                  <Card key={address.id} className="bg-background/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center">
+                        {getAddressIcon(address.type)}
+                        {address.type} Address
+                        {address.isDefault && <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Default</span>}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground space-y-0.5">
+                      <p>{address.line1}</p>
+                      {address.line2 && <p>{address.line2}</p>}
+                      <p>{address.city}, {address.state} {address.zipCode}</p>
+                      <p>{address.country}</p>
+                    </CardContent>
+                    <CardFooter className="pt-2 space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEditAddress(address.id)}>
+                        <Pencil className="mr-1 h-3 w-3" /> Edit
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteAddress(address)} disabled={isDeletingAddress && addressToDelete?.id === address.id}>
+                        {isDeletingAddress && addressToDelete?.id === address.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin"/> : <Trash2 className="mr-1 h-3 w-3" />}
+                        Delete
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {isAddAddressModalOpen && currentUser && (
             <AddressFormModal
                 isOpen={isAddAddressModalOpen}
@@ -698,4 +698,5 @@ export default function MyAccountPage() {
     </div>
   );
 }
+
 

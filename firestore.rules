@@ -1,85 +1,55 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
     // Helper function to check for admin role
     function isAdmin() {
       return request.auth.uid in ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"];
     }
 
-    // Helper function to check if user is authenticated and accessing their own data
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-    
-    // USERS collection
-    match /users/{userId} {
-      // Admins can read/write any user document. Users can read/write their own document.
-      allow read, write: if isAdmin() || isOwner(userId);
-
-      // Subcollections for a user
-      match /appointments/{appointmentId} {
-        // Users can create their own appointments
-        allow create: if isOwner(userId);
-        // Users can read their own appointments, Admins can read any appointment
-        allow read: if isOwner(userId) || isAdmin();
-        // Admins can update any appointment, users can update their own if not completed/cancelled
-        allow update: if isAdmin() || (isOwner(userId) && !(resource.data.status in ['Completed', 'Cancelled']));
-        // Users can delete their own appointments.
-        allow delete: if isOwner(userId);
-      }
-
-      match /addresses/{addressId} {
-        // Users can manage their own addresses.
-        allow create, update, delete: if isOwner(userId);
-        // Admins can read addresses for display in the panel.
-        allow read: if isOwner(userId) || isAdmin();
-      }
-
-      match /orders/{orderId} {
-        allow read, create, update, delete: if isOwner(userId) || isAdmin();
-      }
-    }
-
-    // PRODUCTS collection
+    // Products: Publicly readable, admin-only write.
+    // Exception: Any logged-in user can decrement stock by 1 during a purchase transaction.
     match /products/{productId} {
-      // Anyone can read products
       allow read: if true;
-      // Only admins can create or delete products
       allow create, delete: if isAdmin();
-      // Admins can update anything.
-      // A regular user can only update the stock, and only by decrementing it by 1.
       allow update: if isAdmin() || 
-        (request.auth.uid != null && 
-         request.resource.data.stock == resource.data.stock - 1 &&
-         // Ensure no other fields are being changed
-         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock']));
+                       (request.auth != null &&
+                        request.resource.data.stock == resource.data.stock - 1 &&
+                        // Ensure only the stock is being changed during a user transaction.
+                        request.resource.data.diff(resource.data).affectedKeys.hasOnly(['stock']));
     }
 
-    // SERVICES collection
+    // Users: Users can read/write their own data. Admins can read anyone's data.
+    match /users/{userId} {
+      allow read, update, write: if request.auth.uid == userId || isAdmin();
+      
+      // Subcollections: Only the user or an admin can access these.
+      match /appointments/{appointmentId} {
+        allow read, write: if request.auth.uid == userId || isAdmin();
+      }
+      match /addresses/{addressId} {
+        allow read, write: if request.auth.uid == userId || isAdmin();
+      }
+      match /orders/{orderId} {
+        allow read, write: if request.auth.uid == userId || isAdmin();
+      }
+    }
+    
+    // Services, Offers: Read for all, write for admin.
     match /services/{serviceId} {
-        // Anyone can read active services, admins can read all
-        allow read: if resource.data.status == 'Active' || isAdmin();
-        // Only admins can write
-        allow write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
     
-    // OFFERS collection
     match /offers/{offerId} {
-        // Anyone can read active offers, admins can read all
-        allow read: if resource.data.status == 'Active' || isAdmin();
-        // Only admins can write
-        allow write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
     
-    // ENQUIRIES collection
+    // Enquiries: Allow anyone to create (submit form), admin to manage.
     match /enquiries/{enquiryId} {
-        // Anyone can submit an enquiry
-        allow create: if true;
-        // Only admins can read, update, or delete enquiries
-        allow read, update, delete: if isAdmin();
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
   }
 }

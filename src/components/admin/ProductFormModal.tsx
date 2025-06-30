@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -79,7 +78,7 @@ export function ProductFormModal({
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      brand: '', model: '', capacity: '', price: 0, stock: 0,
+      brand: '', model: '', capacity: '', price: 0, stock: 1,
       condition: 'Used', description: '', category: '', imageUrls: [],
       features: '', warranty: '',
     },
@@ -97,7 +96,7 @@ export function ProductFormModal({
       form.reset({ ...productToEdit, features: productToEdit.features || '', warranty: productToEdit.warranty || '', imageUrls: productToEdit.imageUrls || [] });
     } else {
       form.reset({
-        brand: '', model: '', capacity: '', price: 0, stock: 0,
+        brand: '', model: '', capacity: '', price: 0, stock: 1,
         condition: 'Used', description: '', category: '', imageUrls: [],
         features: '', warranty: '',
       });

@@ -96,6 +96,25 @@ export interface Appointment {
   paymentAmount?: number; // The amount to be paid for the service
 }
 
+export interface Order {
+  id: string; // Firestore document ID will be auto-generated
+  userId: string;
+  productId: string;
+  productDetails: {
+    brand: string;
+    model: string;
+    price: number; // Price at time of order
+    imageUrl?: string;
+  };
+  shippingAddress: Address;
+  status: 'Placed' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
+  paymentMethod: 'Online' | 'COD';
+  paymentId?: string; // from Razorpay, for online orders
+  createdAt: any; // Firestore ServerTimestamp
+  pricePaid: number; // in smallest currency unit (e.g., paise for INR)
+}
+
+
 // Enhanced User type for admin display and Firestore documents
 export interface User {
   uid: string;

@@ -13,6 +13,9 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const stockValue = Number(product.stock);
+  const isAvailable = !isNaN(stockValue) && stockValue > 0;
+
   return (
     <Card className="flex flex-col overflow-hidden h-full hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="p-0 relative">
@@ -44,7 +47,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <Tag className="w-4 h-4 mr-2 text-primary" /> Capacity: {product.capacity}
           </div>
           <div className="flex items-center">
-            <PackageSearch className="w-4 h-4 mr-2 text-primary" /> Stock: {product.stock > 0 ? `${product.stock} units` : 'Out of Stock'}
+            <PackageSearch className="w-4 h-4 mr-2 text-primary" /> Stock: {isAvailable ? `${stockValue} units` : 'Out of Stock'}
           </div>
           {product.warranty && (
             <div className="flex items-center">
@@ -58,7 +61,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <div className="flex space-x-2 w-full">
-          {product.stock > 0 ? (
+          {isAvailable ? (
               <Link href={`/checkout/${product.id}`} className="flex-1">
                   <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">Buy Now</Button>
               </Link>

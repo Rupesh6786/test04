@@ -21,7 +21,7 @@ export interface Product {
 }
 
 export interface Service {
-  id: string;
+  id:string;
   name: string;
   description: string;
   category: string;
@@ -103,7 +103,7 @@ export interface Order {
   productDetails: {
     brand: string;
     model: string;
-    price: number; // Price at time of order
+    price: number; // Price at time of order, in smallest currency unit (paise)
     imageUrl?: string;
   };
   shippingAddress: Address;
@@ -112,6 +112,9 @@ export interface Order {
   paymentId?: string; // from Razorpay, for online orders
   createdAt: any; // Firestore ServerTimestamp
   pricePaid: number; // in smallest currency unit (e.g., paise for INR)
+  estimatedDeliveryDate?: any;
+  shippedDate?: any;
+  deliveredDate?: any;
 }
 
 

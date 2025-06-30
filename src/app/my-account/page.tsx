@@ -576,35 +576,37 @@ export default function MyAccountPage() {
             {!isLoadingOrders && orders.length > 0 && (
               <ul className="space-y-4 max-h-96 overflow-y-auto pr-2">
                 {orders.map(order => (
-                  <li key={order.id} className="p-4 border rounded-md bg-background hover:shadow-md transition-shadow">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="shrink-0">
-                        <Image
-                          src={order.productDetails.imageUrl || 'https://placehold.co/80x60.png'}
-                          alt={`${order.productDetails.brand} ${order.productDetails.model}`}
-                          width={80}
-                          height={60}
-                          className="rounded-md object-cover"
-                        />
-                      </div>
-                      <div className="flex-grow">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-semibold text-foreground">{order.productDetails.brand} {order.productDetails.model}</h3>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                              <CalendarDays className="w-3.5 h-3.5 mr-1.5 shrink-0"/>
-                              Ordered on: {order.createdAt ? format((order.createdAt as Timestamp).toDate(), "PPP") : 'N/A'}
-                            </p>
-                          </div>
-                          <Badge className={getOrderStatusColor(order.status)}>{order.status}</Badge>
+                  <li key={order.id}>
+                    <Link href={`/my-account/orders/${order.id}`} className="block p-4 border rounded-md bg-background hover:shadow-md hover:border-primary transition-all duration-200">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="shrink-0">
+                            <Image
+                            src={order.productDetails.imageUrl || 'https://placehold.co/80x60.png'}
+                            alt={`${order.productDetails.brand} ${order.productDetails.model}`}
+                            width={80}
+                            height={60}
+                            className="rounded-md object-cover"
+                            />
                         </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                            <p><strong>Payment:</strong> {order.paymentMethod} - ₹{(order.pricePaid / 100).toFixed(2)}</p>
-                            <p><strong>Shipped to:</strong> {order.shippingAddress.line1}, {order.shippingAddress.city}</p>
-                            {order.paymentId && <p><strong>Payment ID:</strong> {order.paymentId}</p>}
+                        <div className="flex-grow">
+                            <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 className="font-semibold text-foreground">{order.productDetails.brand} {order.productDetails.model}</h3>
+                                <p className="text-sm text-muted-foreground flex items-center">
+                                <CalendarDays className="w-3.5 h-3.5 mr-1.5 shrink-0"/>
+                                Ordered on: {order.createdAt ? format((order.createdAt as Timestamp).toDate(), "PPP") : 'N/A'}
+                                </p>
+                            </div>
+                            <Badge className={getOrderStatusColor(order.status)}>{order.status}</Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground space-y-1">
+                                <p><strong>Payment:</strong> {order.paymentMethod} - ₹{((order.paymentMethod === 'COD' ? order.productDetails.price : order.pricePaid) / 100).toFixed(2)}</p>
+                                <p><strong>Shipped to:</strong> {order.shippingAddress.line1}, {order.shippingAddress.city}</p>
+                                {order.paymentId && <p><strong>Payment ID:</strong> {order.paymentId}</p>}
+                            </div>
                         </div>
-                      </div>
-                    </div>
+                        </div>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -698,5 +700,3 @@ export default function MyAccountPage() {
     </div>
   );
 }
-
-

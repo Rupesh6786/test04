@@ -1,6 +1,6 @@
-
 "use client";
 
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';

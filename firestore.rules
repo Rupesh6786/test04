@@ -3,104 +3,120 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper functions
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
+  
+    // Helper function to check for admin role
     function isAdmin() {
-      // UIDs of users with admin privileges
       return request.auth.uid in ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"];
     }
 
-    function isUserUpdatingStock(product) {
-        // This function checks that a user update to a product document
-        // ONLY decrements the stock by 1, and changes nothing else.
-        return request.resource.data.stock == product.stock - 1 &&
-               request.resource.data.diff(product).affectedKeys().hasOnly(['stock']);
-    }
-
-    // Users collection
+    // Rules for the 'users' collection
     match /users/{userId} {
-      // Users can read their own data, admins can read any user's data
-      allow read: if isOwner(userId) || isAdmin();
-      // Users can create their own user document upon registration
-      allow create: if isOwner(userId);
-      // Users can update specific fields on their own profile. Admins can update account status.
-      allow update: if (isOwner(userId) && request.resource.data.keys().hasAll(['displayName', 'phone'])) ||
-                       (isAdmin() && request.resource.data.keys().hasOnly(['accountStatus']));
-
-      // Addresses subcollection
-      match /addresses/{addressId} {
-        allow read, create, update, delete: if isOwner(userId) || isAdmin();
-      }
-
-      // Appointments subcollection
-      match /appointments/{appointmentId} {
-        allow read, create: if isOwner(userId) || isAdmin();
-        // Users can update payment status, Admins can update any field.
-        allow update: if (isOwner(userId) && request.resource.data.keys().hasOnly(['status', 'paymentId', 'pricePaid'])) || isAdmin();
-        allow delete: if isAdmin();
-      }
+      // Any authenticated user can create their own user document
+      allow create: if request.auth.uid != null;
       
-      // Orders subcollection
-      match /orders/{orderId} {
-          // Allow creation only by the owner, with correctly structured data
-          allow create: if isOwner(userId) &&
-                           request.resource.data.userId == userId &&
-                           request.resource.data.createdAt == request.time &&
-                           (
-                             ( // Case for Cash on Delivery
-                               request.resource.data.paymentMethod == 'COD' &&
-                               request.resource.data.status == 'Placed' &&
-                               request.resource.data.pricePaid == 0
-                             ) ||
-                             ( // Case for successful Online Payment
-                               request.resource.data.paymentMethod == 'Online' &&
-                               request.resource.data.status == 'Confirmed' &&
-                               request.resource.data.pricePaid > 0 &&
-                               request.resource.data.paymentId is string
-                             )
-                           );
+      // Users can only read or update their own document
+      allow read, update: if request.auth.uid == userId;
+      
+      // Admins can read any user document
+      allow get: if isAdmin();
+      allow list: if isAdmin();
 
-          allow read: if isOwner(userId) || isAdmin();
-          // Only admins can update or delete orders after they are placed
-          allow update, delete: if isAdmin();
+      // Rules for appointments subcollection
+      collection appointments {
+        // Users can create/read their own appointments
+        allow create, list, get: if request.auth.uid == userId;
+        
+        // Users can update their own appointments if they are only paying (status change to Confirmed)
+        allow update: if request.auth.uid == userId &&
+                      request.resource.data.status == "Confirmed" &&
+                      resource.data.status == "Payment Pending";
+                      
+        // Admins can manage any appointment
+        allow read, write: if isAdmin();
+      }
+
+      // Rules for orders subcollection
+      collection orders {
+        // Allow user to create and view their own orders
+        allow list: if request.auth.uid == userId;
+        allow get: if request.auth.uid == userId;
+
+        // Allow create only if the incoming data matches specific criteria
+        allow create: if request.auth.uid == userId
+                      && request.resource.data.userId == userId
+                      && request.resource.data.productId is string
+                      && request.resource.data.productDetails is map
+                      && request.resource.data.shippingAddress is map
+                      && request.resource.data.status in ['Placed', 'Confirmed']
+                      && request.resource.data.paymentMethod in ['Online', 'COD']
+                      && request.resource.data.pricePaid is number
+                      // COD specific checks
+                      && (request.resource.data.paymentMethod == 'COD'
+                          ? request.resource.data.status == 'Placed'
+                            && request.resource.data.pricePaid == 0
+                            && !('paymentId' in request.resource.data)
+                          : true
+                         )
+                      // Online payment specific checks
+                      && (request.resource.data.paymentMethod == 'Online'
+                          ? request.resource.data.status == 'Confirmed'
+                            && request.resource.data.pricePaid > 0
+                            && request.resource.data.paymentId is string
+                          : true
+                         );
+
+        // Allow admin to read/write any order for management
+        allow read, write: if isAdmin();
+      }
+
+      // Rules for addresses subcollection
+      collection addresses {
+         allow read, create, delete: if request.auth.uid == userId;
+         // Allow admin to read any address
+         allow get, list: if isAdmin();
       }
     }
 
-    // Products collection
+    // Rules for 'products' collection
     match /products/{productId} {
-      // Anyone can read products
-      allow read: if true;
-
-      // Allow a logged-in user to update a product ONLY if they are decrementing stock by 1 for a purchase.
-      // Admins have full update permissions.
-      allow update: if (request.auth != null && isUserUpdatingStock(resource.data)) || isAdmin();
-
-      // Only admins can create or delete products
+      allow read;
+      
+      // Allow create, delete only for admins
       allow create, delete: if isAdmin();
-    }
-    
-    // Services collection (Publicly readable, admin writable)
-    match /services/{serviceId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    
-    // Offers collection (Publicly readable, admin writable)
-    match /offers/{offerId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
+      
+      // Allow updates for stock reduction by a logged-in user
+      allow update: if isAdmin() || (
+        request.auth.uid != null &&
+        request.resource.data.stock == resource.data.stock - 1 &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
+      );
     }
 
-    // Enquiries collection (Publicly writable, admin only for R/U/D)
+    // Rules for 'services' collection
+    match /services/{serviceId} {
+        allow read;
+        // Only admins can create, update, or delete services
+        allow write: if isAdmin();
+    }
+    
+    // Rules for 'offers' collection
+    match /offers/{offerId} {
+        allow read;
+        // Only admins can manage offers
+        allow write: if isAdmin();
+    }
+
+    // Rules for 'enquiries' collection
     match /enquiries/{enquiryId} {
-        // Anyone can create an enquiry
-        allow create: if true;
-        // Only admins can read, update status, or delete
-        allow read, update, delete: if isAdmin();
+        // Any user (even unauthenticated) can create an enquiry
+        allow create;
+        // Only admins can read or manage enquiries
+        allow read, write: if isAdmin();
+    }
+    
+    // Default deny all other reads/writes
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

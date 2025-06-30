@@ -141,7 +141,10 @@ export default function CheckoutPage() {
 
   const createOrderAndReduceStock = useCallback(async (orderData: Omit<Order, 'id' | 'createdAt'>) => {
     const productRef = doc(db, "products", orderData.productId);
-    const ordersColRef = collection(db, "users", orderData.userId, "orders");
+    
+    // Explicitly define the path for the new order document
+    const ordersCollectionPath = `users/${orderData.userId}/orders`;
+    const ordersColRef = collection(db, ordersCollectionPath);
 
     try {
       await runTransaction(db, async (transaction) => {

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import type { Product } from '@/types';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, Unsubscribe, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, Unsubscribe, Timestamp, orderBy } from 'firebase/firestore';
 import { Loader2, PackageSearch } from 'lucide-react';
 
 export default function ProductsPage() {
@@ -16,11 +16,9 @@ export default function ProductsPage() {
   useEffect(() => {
     setIsLoading(true);
     const productsColRef = collection(db, "products");
-    // Query for products with stock > 0. Sorting will be handled client-side to avoid composite index requirement.
-    const q = query(
-      productsColRef, 
-      where("stock", ">", 0)
-    );
+    // Query for all products, ordered by creation date descending (newest first).
+    // This shows all products, including out-of-stock ones. The ProductCard handles the UI.
+    const q = query(productsColRef, orderBy("createdAt", "desc"));
 
     const unsubscribe: Unsubscribe = onSnapshot(
       q,
@@ -34,13 +32,6 @@ export default function ProductsPage() {
             createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
             updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : new Date(),
           } as Product);
-        });
-
-        // Sort products by creation date (newest first) on the client side
-        fetchedProducts.sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return dateB - dateA;
         });
 
         setProducts(fetchedProducts);
@@ -62,7 +53,7 @@ export default function ProductsPage() {
       <div className="text-center mb-10">
         <h1 className="font-headline text-3xl sm:text-4xl font-semibold text-foreground mb-2">Our Products</h1>
         <p className="text-lg text-muted-foreground">
-          Find the perfect pre-owned or new AC unit for your needs. All units are quality-checked and in stock.
+          Find the perfect pre-owned or new AC unit for your needs. All units are quality-checked.
         </p>
       </div>
       

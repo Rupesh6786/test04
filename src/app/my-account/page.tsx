@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"; 
 import { useAuth } from "@/contexts/AuthContext";
-import { Building2, ListChecks, UserCircle, LogOut, Loader2, PlusCircle, Pencil, Trash2, Home, Briefcase, MapPin, CalendarDays, Clock, CreditCard, Save, XCircle, Phone } from "lucide-react";
+import { Building2, ListChecks, UserCircle, LogOut, Loader2, PlusCircle, Pencil, Trash2, Home, Briefcase, MapPin, CalendarDays, Clock, CreditCard, Save, XCircle, Phone, Package } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import type { Address, Appointment, User } from "@/types";
+import type { Address, Appointment, User, Order } from "@/types";
 import { db, auth } from "@/lib/firebase";
 import { collection, query, onSnapshot, Unsubscribe, doc, deleteDoc, updateDoc, orderBy, serverTimestamp, getDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
@@ -27,6 +27,9 @@ import {
 import { AddressFormModal } from "@/components/AddressFormModal";
 import { format, parseISO } from 'date-fns';
 import type {} from '@/types/razorpay';
+import { Timestamp } from "firebase/firestore";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 const RAZORPAY_KEY_ID = "rzp_test_lw1YZ20Ss4PtqR";
 
@@ -37,6 +40,8 @@ export default function MyAccountPage() {
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<Address | null>(null);
@@ -131,6 +136,34 @@ export default function MyAccountPage() {
     }
     return () => {
       if (unsubscribeAppointments) unsubscribeAppointments();
+    };
+  }, [currentUser, isLoggedIn, toast]);
+
+  useEffect(() => {
+    let unsubscribeOrders: Unsubscribe | undefined;
+    if (isLoggedIn && currentUser) {
+      setIsLoadingOrders(true);
+      const ordersCol = collection(db, "users", currentUser.uid, "orders");
+      const q = query(ordersCol, orderBy("createdAt", "desc"));
+
+      unsubscribeOrders = onSnapshot(q, (querySnapshot) => {
+        const fetchedOrders: Order[] = [];
+        querySnapshot.forEach((docSnap) => {
+          fetchedOrders.push({ id: docSnap.id, ...docSnap.data() } as Order);
+        });
+        setOrders(fetchedOrders);
+        setIsLoadingOrders(false);
+      }, (error) => {
+        console.error("Error fetching orders: ", error);
+        toast({ title: "Error", description: "Could not fetch your orders.", variant: "destructive" });
+        setIsLoadingOrders(false);
+      });
+    } else {
+      setOrders([]);
+      setIsLoadingOrders(false);
+    }
+    return () => {
+      if (unsubscribeOrders) unsubscribeOrders();
     };
   }, [currentUser, isLoggedIn, toast]);
 
@@ -373,6 +406,17 @@ export default function MyAccountPage() {
       default: return 'bg-gray-100 text-gray-700';
     }
   };
+  
+  const getOrderStatusColor = (status: Order['status']) => {
+    switch (status) {
+      case 'Confirmed': return 'bg-green-100 text-green-700';
+      case 'Placed': return 'bg-blue-100 text-blue-700';
+      case 'Shipped': return 'bg-purple-100 text-purple-700';
+      case 'Delivered': return 'bg-primary/20 text-primary';
+      case 'Cancelled': return 'bg-red-100 text-red-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -566,6 +610,63 @@ export default function MyAccountPage() {
             )}
           </CardContent>
         </Card>
+        
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center"><Package className="mr-2 h-6 w-6 text-primary" /> My Orders</CardTitle>
+            <CardDescription>Track your product purchases.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingOrders && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <p className="ml-2 text-muted-foreground">Loading orders...</p>
+              </div>
+            )}
+            {!isLoadingOrders && orders.length === 0 && (
+              <p className="text-muted-foreground">You have not placed any orders yet.</p>
+            )}
+            {!isLoadingOrders && orders.length > 0 && (
+              <ul className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {orders.map(order => (
+                  <li key={order.id} className="p-4 border rounded-md bg-background hover:shadow-md transition-shadow">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="shrink-0">
+                        <Image
+                          src={order.productDetails.imageUrl || 'https://placehold.co/80x60.png'}
+                          alt={`${order.productDetails.brand} ${order.productDetails.model}`}
+                          width={80}
+                          height={60}
+                          className="rounded-md object-cover"
+                        />
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-semibold text-foreground">{order.productDetails.brand} {order.productDetails.model}</h3>
+                            <p className="text-sm text-muted-foreground flex items-center">
+                              <CalendarDays className="w-3.5 h-3.5 mr-1.5 shrink-0"/>
+                              Ordered on: {order.createdAt ? format((order.createdAt as Timestamp).toDate(), "PPP") : 'N/A'}
+                            </p>
+                          </div>
+                          <Badge className={getOrderStatusColor(order.status)}>{order.status}</Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                            <p><strong>Payment:</strong> {order.paymentMethod} - ₹{(order.pricePaid / 100).toFixed(2)}</p>
+                            <p><strong>Shipped to:</strong> {order.shippingAddress.line1}, {order.shippingAddress.city}</p>
+                            {order.paymentId && <p><strong>Payment ID:</strong> {order.paymentId}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link href="/products" className="mt-6 block">
+              <Button className="w-full md:w-auto">Shop for Products</Button>
+            </Link>
+          </CardContent>
+        </Card>
 
         {isAddAddressModalOpen && currentUser && (
             <AddressFormModal
@@ -597,3 +698,4 @@ export default function MyAccountPage() {
     </div>
   );
 }
+

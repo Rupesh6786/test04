@@ -277,6 +277,8 @@ export default function CheckoutPage() {
       return null; 
   }
 
+  // Handle both imageUrl (string) and imageUrls (array of strings)
+  const displayImage = (product.imageUrls && product.imageUrls[0]) || product.imageUrl || "https://placehold.co/80x60.png";
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -295,7 +297,7 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Image
-                  src={product.imageUrls[0]}
+                  src={displayImage}
                   alt={`${product.brand} ${product.model}`}
                   width={80}
                   height={60}

@@ -9,7 +9,8 @@ export interface Product {
   capacity: string;
   stock: number;
   condition: "New" | "Used";
-  imageUrls: string[];
+  imageUrls?: string[]; // Make optional to support old format
+  imageUrl?: string; // Add old field for backward compatibility
   description: string;
   category: string;
   features?: string;

@@ -16,12 +16,16 @@ export function ProductCard({ product }: ProductCardProps) {
   const stockValue = Number(product.stock);
   const isAvailable = !isNaN(stockValue) && stockValue > 0;
 
+  // Use the first available image from either the new array or the old field
+  const displayImage = (product.imageUrls && product.imageUrls[0]) || product.imageUrl || "https://placehold.co/400x300.png";
+
+
   return (
     <Card className="flex flex-col overflow-hidden h-full hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="p-0 relative">
         <Link href={`/products/${product.id}`} aria-label={`View details for ${product.brand} ${product.model}`}>
           <Image
-            src={product.imageUrls?.[0] || "https://placehold.co/400x300.png"} // Fallback image
+            src={displayImage}
             alt={`${product.brand} ${product.model}`}
             width={400}
             height={300}

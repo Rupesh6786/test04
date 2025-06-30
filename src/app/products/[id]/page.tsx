@@ -96,6 +96,11 @@ export default function ProductDetailPage() {
 
   const featuresArray = product.features ? product.features.split(',').map(f => f.trim()) : [];
 
+  // Handle both imageUrl (string) and imageUrls (array of strings) for the carousel
+  const carouselImageUrls = (product.imageUrls && product.imageUrls.length > 0)
+    ? product.imageUrls
+    : (product.imageUrl ? [product.imageUrl] : []);
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -107,8 +112,8 @@ export default function ProductDetailPage() {
           onMouseLeave={plugin.current.reset}
         >
           <CarouselContent>
-            {product.imageUrls && product.imageUrls.length > 0 ? (
-                product.imageUrls.map((url, index) => (
+            {carouselImageUrls.length > 0 ? (
+                carouselImageUrls.map((url, index) => (
                 <CarouselItem key={index}>
                     <Card className="overflow-hidden">
                     <CardContent className="p-0 aspect-[4/3] flex items-center justify-center">

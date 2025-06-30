@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -23,10 +22,10 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden h-full hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="p-0 relative">
-        <Link href={`/products/${product.id}`} aria-label={`View details for ${product.brand} ${product.model}`}>
+        <Link href={`/products/${product.id}`} aria-label={`View details for ${product.brand} ${product.capacity} ${product.category}`}>
           <Image
             src={displayImage}
-            alt={`${product.brand} ${product.model}`}
+            alt={`${product.brand} ${product.capacity} ${product.category}`}
             width={400}
             height={300}
             className="object-cover w-full h-48"
@@ -39,7 +38,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardContent className="p-4 flex-grow">
         <CardTitle className="font-headline text-xl mb-1">
           <Link href={`/products/${product.id}`} className="hover:text-primary transition-colors">
-            {product.brand} {product.model}
+            {product.brand} {product.capacity} {product.category}
           </Link>
         </CardTitle>
         <div className="flex items-center space-x-2 mb-2">

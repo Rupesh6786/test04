@@ -3,7 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Users, CircleDollarSign, CalendarCheck, Star } from 'lucide-react';
+import { Award, Users, CircleDollarSign, CalendarCheck, Quote } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const whyChooseUsItems = [
   {
@@ -117,40 +118,47 @@ export default function HomePage() {
       {/* Testimonials Section */}
       <section id="testimonials" className="py-16 md:py-24 bg-card">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-headline text-3xl sm:text-4xl font-semibold text-center text-foreground mb-12">
-            What Our Customers Say
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="bg-background p-6 shadow-lg">
-              <div className="flex items-center mb-4">
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-3xl sm:text-4xl font-semibold text-foreground mb-4">
+              Trusted by Thousands
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              See what our satisfied customers have to say about our products and services.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <Card className="bg-background p-6 shadow-lg flex flex-col justify-between hover:-translate-y-1 transition-transform">
+              <div>
+                <Quote className="w-10 h-10 text-primary/30 mb-4" strokeWidth={1.5} />
+                <blockquote className="text-foreground/80 text-lg leading-relaxed mb-6">
+                  "The best service I have ever received. The technicians were professional and fixed my AC in no time. Their attention to detail and customer care is top-notch. Highly recommended!"
+                </blockquote>
               </div>
-              <blockquote className="text-foreground/80 italic mb-4">
-                "The best service I have ever received. The technicians were professional and fixed my AC in no time. Their attention to detail and customer care is top-notch. Highly recommended!"
-              </blockquote>
-              <footer className="text-right">
-                <p className="font-semibold text-foreground">Rohan Sharma</p>
-                <p className="text-sm text-muted-foreground">Mumbai</p>
+              <footer className="flex items-center mt-auto">
+                <Avatar>
+                  <AvatarFallback>RS</AvatarFallback>
+                </Avatar>
+                <div className="ml-4">
+                  <p className="font-semibold text-foreground">Rohan Sharma</p>
+                  <p className="text-sm text-muted-foreground">Mumbai</p>
+                </div>
               </footer>
             </Card>
-            <Card className="bg-background p-6 shadow-lg">
-               <div className="flex items-center mb-4">
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+            <Card className="bg-background p-6 shadow-lg flex flex-col justify-between hover:-translate-y-1 transition-transform">
+              <div>
+                <Quote className="w-10 h-10 text-primary/30 mb-4" strokeWidth={1.5} />
+                <blockquote className="text-foreground/80 text-lg leading-relaxed mb-6">
+                  "I bought a second-hand AC and it's working like new. The price was great and the installation team was incredibly efficient and clean. Thank you, Classic-Solution!"
+                </blockquote>
               </div>
-              <blockquote className="text-foreground/80 italic mb-4">
-                "I bought a second-hand AC and it's working like new. The price was great and the installation team was incredibly efficient and clean. Thank you, Classic-Solution!"
-              </blockquote>
-              <footer className="text-right">
-                <p className="font-semibold text-foreground">Priya K.</p>
-                <p className="text-sm text-muted-foreground">Thane</p>
+              <footer className="flex items-center mt-auto">
+                <Avatar>
+                  <AvatarFallback>PK</AvatarFallback>
+                </Avatar>
+                <div className="ml-4">
+                  <p className="font-semibold text-foreground">Priya K.</p>
+                  <p className="text-sm text-muted-foreground">Thane</p>
+                </div>
               </footer>
             </Card>
           </div>

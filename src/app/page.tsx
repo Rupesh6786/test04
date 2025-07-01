@@ -4,7 +4,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, Users, CircleDollarSign, CalendarCheck, Quote, Loader2, PackageSearch } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
@@ -14,7 +14,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
 import type { Product } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { ProductCard } from '@/components/ProductCard';
 
 const whyChooseUsItems = [
   {
@@ -108,75 +108,6 @@ export default function HomePage() {
 
     return () => unsubscribe();
   }, []);
-  
-  const getRatingInfo = (features?: string) => {
-    if (!features) return '';
-    const lowerFeatures = features.toLowerCase();
-    if (lowerFeatures.includes('5 star')) return '5 Star';
-    if (lowerFeatures.includes('4 star')) return '4 Star';
-    if (lowerFeatures.includes('3 star')) return '3 Star';
-    return '';
-  };
-  
-  const getCategoryInfo = (product: Product) => {
-    let baseCategory = product.category || '';
-    // remove "AC" from category if it exists to avoid duplication
-    if (baseCategory.toLowerCase().endsWith(' ac')) {
-        baseCategory = baseCategory.slice(0, -3);
-    }
-    
-    let info = baseCategory;
-
-    if (product.features?.toLowerCase().includes('inverter')) {
-      info += ' Inverter';
-    }
-    
-    info += ' AC';
-    
-    return info.trim();
-  }
-
-  const renderProductCard = (product: Product) => {
-    const rating = getRatingInfo(product.features);
-    const categoryInfo = getCategoryInfo(product);
-    const hasDiscount = product.discountPercentage && product.discountPercentage > 0;
-    
-    const productTitle = [product.brand, product.capacity, rating].filter(Boolean).join(' ');
-
-    return (
-      <div className="h-full">
-        <Card className="flex flex-col h-full w-full max-w-[400px] mx-auto overflow-hidden hover:shadow-xl transition-shadow items-center text-center">
-          <CardHeader className="p-0 relative w-full">
-            {hasDiscount && (
-              <div className="absolute top-2 left-2 z-10 bg-destructive text-destructive-foreground px-2 py-1 text-xs font-bold rounded-md shadow-lg transform -rotate-6">
-                {product.discountPercentage}% OFF
-              </div>
-            )}
-            <Link href={`/products/${product.id}`}>
-              <Image 
-                src={product.imageUrls?.[0] || 'https://placehold.co/400x300.png'}
-                alt={productTitle}
-                width={400}
-                height={300}
-                className="object-cover w-full h-72"
-              />
-            </Link>
-          </CardHeader>
-          <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
-            <CardTitle className="font-headline text-lg mb-1">{productTitle}</CardTitle>
-            <p className="text-sm text-muted-foreground mb-2">{categoryInfo}</p>
-            <div className="flex-grow" />
-          </CardContent>
-          <CardFooter className="p-4 pt-0 flex justify-center">
-            <Link href={`/products/${product.id}`}>
-              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground w-auto px-6">Shop Now</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  };
-
 
   return (
     <>
@@ -273,9 +204,7 @@ export default function HomePage() {
               {/* Desktop View: Static Grid of 3 */}
               <div className="hidden lg:grid grid-cols-3 gap-6">
                 {featuredProducts.slice(0, 3).map(product => (
-                  <div key={product.id}>
-                    {renderProductCard(product)}
-                  </div>
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
@@ -292,7 +221,7 @@ export default function HomePage() {
                   <CarouselContent className="-ml-4">
                     {featuredProducts.map(product => (
                       <CarouselItem key={product.id} className="pl-4 basis-full md:basis-1/2">
-                        {renderProductCard(product)}
+                        <ProductCard product={product} />
                       </CarouselItem>
                     ))}
                   </CarouselContent>

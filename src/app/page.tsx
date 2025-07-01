@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Users, CircleDollarSign, CalendarCheck, CheckCircle } from 'lucide-react';
+import { Award, Users, CircleDollarSign, CalendarCheck, Star } from 'lucide-react';
 
 const whyChooseUsItems = [
   {
@@ -110,6 +110,49 @@ export default function HomePage() {
                 View All Products
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-16 md:py-24 bg-card">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-headline text-3xl sm:text-4xl font-semibold text-center text-foreground mb-12">
+            What Our Customers Say
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Card className="bg-background p-6 shadow-lg">
+              <div className="flex items-center mb-4">
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+              </div>
+              <blockquote className="text-foreground/80 italic mb-4">
+                "The best service I have ever received. The technicians were professional and fixed my AC in no time. Their attention to detail and customer care is top-notch. Highly recommended!"
+              </blockquote>
+              <footer className="text-right">
+                <p className="font-semibold text-foreground">Rohan Sharma</p>
+                <p className="text-sm text-muted-foreground">Mumbai</p>
+              </footer>
+            </Card>
+            <Card className="bg-background p-6 shadow-lg">
+               <div className="flex items-center mb-4">
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+              </div>
+              <blockquote className="text-foreground/80 italic mb-4">
+                "I bought a second-hand AC and it's working like new. The price was great and the installation team was incredibly efficient and clean. Thank you, Classic-Solution!"
+              </blockquote>
+              <footer className="text-right">
+                <p className="font-semibold text-foreground">Priya K.</p>
+                <p className="text-sm text-muted-foreground">Thane</p>
+              </footer>
+            </Card>
           </div>
         </div>
       </section>

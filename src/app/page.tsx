@@ -88,42 +88,41 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section Carousel */}
-      <section className="bg-gradient-to-r from-primary/20 via-background to-background relative overflow-hidden">
+      <section className="bg-gradient-to-r from-primary/20 via-background to-background relative overflow-hidden py-16 md:py-24">
         <Carousel
           plugins={[plugin.current]}
-          className="w-full"
+          className="w-full embla-fade"
+          opts={{loop: true}}
         >
           <CarouselContent>
             {heroSlides.map((slide, index) => (
               <CarouselItem key={index}>
-                <div className="py-16 md:py-24">
-                  <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
-                      <div className="text-center md:text-left">
-                        <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
-                          {slide.title}
-                        </h1>
-                        <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto md:mx-0">
-                          {slide.description}
-                        </p>
-                        <Link href={slide.buttonLink}>
-                          <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg transition-transform hover:scale-105">
-                            {slide.buttonText}
-                          </Button>
-                        </Link>
-                      </div>
-                      <div className="relative h-80 md:h-[450px] group">
-                        <div className="absolute inset-0 bg-primary/30 rounded-lg transform -rotate-3 group-hover:rotate-0 transition-transform duration-300"></div>
-                        <Image
-                          src={slide.imageUrl}
-                          alt={slide.imageAlt}
-                          data-ai-hint={slide.aiHint}
-                          width={600}
-                          height={450}
-                          className="rounded-lg shadow-2xl object-cover w-full h-full relative transform rotate-1 group-hover:rotate-0 transition-transform duration-300"
-                          priority={index === 0}
-                        />
-                      </div>
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                  <div className="grid md:grid-cols-2 gap-8 items-center">
+                    <div className="text-center md:text-left">
+                      <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
+                        {slide.title}
+                      </h1>
+                      <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto md:mx-0">
+                        {slide.description}
+                      </p>
+                      <Link href={slide.buttonLink}>
+                        <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg transition-transform hover:scale-105">
+                          {slide.buttonText}
+                        </Button>
+                      </Link>
+                    </div>
+                    <div className="relative h-80 md:h-[450px] group">
+                      <div className="absolute inset-0 bg-primary/30 rounded-lg transform -rotate-3 group-hover:rotate-0 transition-transform duration-300"></div>
+                      <Image
+                        src={slide.imageUrl}
+                        alt={slide.imageAlt}
+                        data-ai-hint={slide.aiHint}
+                        width={600}
+                        height={450}
+                        className="rounded-lg shadow-2xl object-cover w-full h-full relative transform rotate-1 group-hover:rotate-0 transition-transform duration-300"
+                        priority={index === 0}
+                      />
                     </div>
                   </div>
                 </div>

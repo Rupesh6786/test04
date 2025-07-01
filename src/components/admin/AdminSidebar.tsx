@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ListChecks, Users, BarChart3, LogOut, Settings, Package, X as XIcon, Wrench, Tag, MessageSquare } from 'lucide-react';
+import { Home, ListChecks, Users, BarChart3, LogOut, Settings, Package, X as XIcon, Wrench, Tag, MessageSquare, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: Home },
   { href: '/admin/appointments', label: 'Appointments', icon: ListChecks },
+  { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/enquiries', label: 'Enquiries', icon: MessageSquare },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/products', label: 'Products', icon: Package },

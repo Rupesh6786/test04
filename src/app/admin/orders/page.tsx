@@ -295,7 +295,7 @@ export default function AdminOrdersPage() {
                         <TableHead onClick={() => requestSort('userName')} className="cursor-pointer hover:bg-muted/50 min-w-[200px]">Customer {getSortIndicator('userName')}</TableHead>
                         <TableHead className="min-w-[200px]">Product</TableHead>
                         <TableHead onClick={() => requestSort('createdAt')} className="cursor-pointer hover:bg-muted/50">Date Placed {getSortIndicator('createdAt')}</TableHead>
-                        <TableHead className="text-right whitespace-nowrap">Total Paid</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">Total Unpaid</TableHead>
                         <TableHead>Payment</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -325,7 +325,7 @@ export default function AdminOrdersPage() {
                           <TableCell>
                             {order.createdAt ? format(order.createdAt as Date, "MMM d, yyyy") : 'N/A'}
                           </TableCell>
-                          <TableCell className="text-right font-medium">₹{((order.paymentMethod === 'COD' ? order.productDetails.price : order.pricePaid) / 100).toFixed(2)}</TableCell>
+                          <TableCell className="text-right font-medium">₹{((order.paymentMethod === 'COD' && order.status !== 'Delivered' && order.status !== 'Cancelled' ? order.productDetails.price : 0) / 100).toFixed(2)}</TableCell>
                           <TableCell>{order.paymentMethod}</TableCell>
                           <TableCell>
                              <Badge variant="outline" className={`border ${getStatusColor(order.status)}`}>{order.status}</Badge>

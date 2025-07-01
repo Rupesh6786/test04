@@ -1,23 +1,29 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper Functions
+    // --- Helper Functions ---
+
     function isAdmin() {
-      // Check if the user's UID is in the hardcoded list of admin UIDs.
+      // Check if the user's UID is in the list of admin UIDs.
       return request.auth.uid in ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"];
     }
 
-    function isOwner(userId) {
-      // Check if the requesting user is the owner of the document.
-      return request.auth != null && request.auth.uid == userId;
+    function isSignedIn() {
+      // Check if a user is authenticated.
+      return request.auth != null;
     }
 
-    // Function to validate the structure of an incoming order.
+    function isOwner(userId) {
+      // Check if the authenticated user is the owner of the document.
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Validates the structure of an incoming order document.
     function isValidOrder(orderData) {
-      let isStructureValid =
-        orderData.userId == request.auth.uid &&
+      return orderData.userId == request.auth.uid &&
         orderData.productId is string &&
         orderData.productDetails is map &&
         orderData.productDetails.brand is string &&
@@ -30,94 +36,93 @@ service cloud.firestore {
         orderData.shippingAddress.zipCode is string &&
         orderData.shippingAddress.country is string &&
         orderData.shippingAddress.type is string &&
-        orderData.estimatedDeliveryDate is timestamp;
+        orderData.estimatedDeliveryDate is timestamp &&
+        (
+          (orderData.paymentMethod == 'COD' &&
+           orderData.status == 'Placed' &&
+           orderData.pricePaid == 0 &&
+           !('paymentId' in orderData)) ||
 
-      let isCODValid =
-        orderData.paymentMethod == 'COD' &&
-        orderData.status == 'Placed' &&
-        orderData.pricePaid == 0 &&
-        !('paymentId' in orderData);
-
-      let isOnlineValid =
-        orderData.paymentMethod == 'Online' &&
-        orderData.status == 'Confirmed' &&
-        orderData.pricePaid > 0 &&
-        orderData.paymentId is string;
-
-      return isStructureValid && (isCODValid || isOnlineValid);
+          (orderData.paymentMethod == 'Online' &&
+           orderData.status == 'Confirmed' &&
+           orderData.pricePaid > 0 &&
+           orderData.paymentId is string)
+        );
     }
 
-    // PRODUCTS: Publicly readable, admin-only write access.
-    // A logged-in user can update a product only to decrement stock by 1 during a transaction.
+    // --- Public Collections ---
+
     match /products/{productId} {
       allow read: if true;
+      // Admins can create/delete. Users can only update stock during a transaction.
       allow create, delete: if isAdmin();
       allow update: if isAdmin() || (
-        request.auth != null &&
+        isSignedIn() &&
         request.resource.data.stock == resource.data.stock - 1 &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
       );
     }
 
-    // SERVICES: Public can read active. Admin has full access.
     match /services/{serviceId} {
-      allow read: if resource.data.status == 'Active' || isAdmin();
+      allow read: if true;
       allow write: if isAdmin();
     }
-    
-    // OFFERS: Public can read active. Admin has full access.
+
     match /offers/{offerId} {
-      allow read: if resource.data.status == 'Active' || isAdmin();
+      allow read: if true;
       allow write: if isAdmin();
     }
-    
-    // ENQUIRIES: Anyone can create. Admin has full R/U/D access.
+
     match /enquiries/{enquiryId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
     }
 
-    // USER-SPECIFIC DATA
-    match /users/{userId} {
-      // User can create their own doc on signup.
-      allow create: if isOwner(userId);
-      
-      // Admins can read any profile. Users can read their own.
-      allow read: if isOwner(userId) || isAdmin();
-      
-      // Users can ONLY update their displayName and phone. Admins can update accountStatus.
-      allow update: if 
-        (isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'phone'])) ||
-        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['accountStatus']));
+    // --- Users Collection & Subcollections ---
 
-      // Subcollections within a user document
+    match /users/{userId} {
+      allow create: if isOwner(userId);
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      // Users can only update their own display name and phone number.
+      allow update: if isOwner(userId) && request.resource.data.keys().hasAny(['displayName', 'phone']);
+      allow delete: if false;
+
+      // --- SUBCOLLECTIONS ---
+
       match /addresses/{addressId} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read, write: if isOwner(userId);
       }
 
       match /appointments/{appointmentId} {
-        allow create, read: if isOwner(userId);
-        allow update: if 
-          (isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'paymentId', 'pricePaid'])) ||
-          (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
-        allow delete: if false; // Keep appointment history
+        allow create: if isOwner(userId);
+        allow read: if isOwner(userId) || isAdmin();
+        allow update: if isOwner(userId) || isAdmin();
+        allow delete: if false;
       }
       
+      // Orders subcollection
       match /orders/{orderId} {
         // A user can create an order IF the data is valid
         allow create: if isOwner(userId) && isValidOrder(request.resource.data);
+        
+        // A user can read their own orders. Admins can read any order.
         allow read: if isOwner(userId) || isAdmin();
-        // Admins can update status (e.g., shipped). Users can update only to cancel.
-        allow update: if isAdmin() || 
+        
+        // Admins can update status. Users can only update to cancel their own order.
+        allow update: if isAdmin() ||
           (isOwner(userId) && request.resource.data.status == 'Cancelled' && resource.data.status != 'Delivered');
-        // Only admins can delete orders to preserve history.
+          
+        // Only admins can delete orders, to preserve history.
         allow delete: if isAdmin();
       }
     }
-    
-    // Collection Group rules for admin panel to fetch all appointments
+
+    // --- Collection Group Rules ---
+
+    // Admin collectionGroup access to appointments across all users
     match /{path=**}/appointments/{appointmentId} {
-        allow read: if isAdmin();
+      allow get, list: if isAdmin();
     }
   }
 }

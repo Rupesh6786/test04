@@ -83,7 +83,7 @@ const heroSlides = [
 ];
 
 export default function HomePage() {
-  const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
+  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
 
   return (
     <>
@@ -92,8 +92,6 @@ export default function HomePage() {
         <Carousel
           plugins={[plugin.current]}
           className="w-full"
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
         >
           <CarouselContent>
             {heroSlides.map((slide, index) => (

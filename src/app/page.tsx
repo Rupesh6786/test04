@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Award, Users, CircleDollarSign, CalendarCheck, Quote, Loader2 } from 'lucide-react';
+import { Award, Users, CircleDollarSign, CalendarCheck, Quote, Loader2, PackageSearch } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
@@ -81,8 +81,6 @@ export default function HomePage() {
   useEffect(() => {
     setIsLoading(true);
     const productsRef = collection(db, "products");
-    // Simplified query to avoid composite index requirement.
-    // Fetches the 6 most recent products, filtering for stock happens on the client.
     const q = query(
       productsRef,
       orderBy("createdAt", "desc"),
@@ -100,7 +98,6 @@ export default function HomePage() {
         } as Product);
       });
       
-      // Filter for in-stock products on the client-side
       const inStockProducts = fetchedProducts.filter(p => p.stock > 0);
       setFeaturedProducts(inStockProducts);
       setIsLoading(false);
@@ -128,6 +125,48 @@ export default function HomePage() {
     }
     return info;
   }
+
+  const renderProductCard = (product: Product) => {
+    const rating = getRatingInfo(product.features);
+    const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''}`;
+    const categoryInfo = getCategoryInfo(product);
+    const hasDiscount = product.discountPercentage && product.discountPercentage > 0;
+
+    return (
+      <div className="h-full">
+        <Card className="flex flex-col h-full w-full max-w-[400px] mx-auto overflow-hidden hover:shadow-xl transition-shadow items-center text-center">
+          <CardHeader className="p-0 relative w-full">
+            {hasDiscount && (
+              <div className="absolute top-2 left-2 z-10 bg-destructive text-destructive-foreground px-2 py-1 text-xs font-bold rounded-md shadow-lg transform -rotate-6">
+                {product.discountPercentage}% OFF
+              </div>
+            )}
+            <Link href={`/products/${product.id}`}>
+              <Image 
+                src={product.imageUrls?.[0] || 'https://placehold.co/400x300.png'}
+                alt={`${product.brand} ${product.model}`}
+                width={400}
+                height={300}
+                className="object-cover w-full h-72"
+              />
+            </Link>
+          </CardHeader>
+          <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
+            <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
+            <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
+            <p className="text-sm text-primary font-semibold mt-1 capitalize">{categoryInfo}</p>
+            <div className="flex-grow" />
+          </CardContent>
+          <CardFooter className="p-4 pt-0 flex justify-center">
+            <Link href={`/products/${product.id}`}>
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground w-auto px-6">Shop Now</Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  };
+
 
   return (
     <>
@@ -219,56 +258,45 @@ export default function HomePage() {
               <Skeleton className="h-96 w-full rounded-lg" />
               <Skeleton className="h-96 w-full rounded-lg" />
             </div>
-          ) : (
-            featuredProducts.length > 0 && (
-              <Carousel
-                plugins={[featuredProductPlugin.current]}
-                className="w-full"
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-              >
-                <CarouselContent className="-ml-4">
-                  {featuredProducts.map(product => {
-                    const rating = getRatingInfo(product.features);
-                    const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''}`;
-                    const categoryInfo = getCategoryInfo(product);
+          ) : featuredProducts.length > 0 ? (
+             <>
+              {/* Desktop View: Static Grid of 3 */}
+              <div className="hidden lg:grid grid-cols-3 gap-8">
+                {featuredProducts.slice(0, 3).map(product => (
+                  <div key={product.id}>
+                    {renderProductCard(product)}
+                  </div>
+                ))}
+              </div>
 
-                    return (
-                      <CarouselItem key={product.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                        <div className="h-full">
-                          <Card className="flex flex-col h-full overflow-hidden hover:shadow-xl transition-shadow items-center text-center">
-                            <CardHeader className="p-0">
-                              <Link href={`/products/${product.id}`}>
-                                <Image 
-                                  src={product.imageUrls?.[0] || 'https://placehold.co/400x300.png'}
-                                  alt={`${product.brand} ${product.model}`}
-                                  width={400}
-                                  height={300}
-                                  className="object-cover w-full h-72"
-                                />
-                              </Link>
-                            </CardHeader>
-                            <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
-                              <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
-                              <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
-                              <p className="text-sm text-primary font-semibold mt-1 capitalize">{categoryInfo}</p>
-                              <div className="flex-grow" />
-                            </CardContent>
-                            <CardFooter className="p-4 pt-0 flex justify-center">
-                              <Link href={`/products/${product.id}`}>
-                                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground px-6">Shop Now</Button>
-                              </Link>
-                            </CardFooter>
-                          </Card>
-                        </div>
+              {/* Mobile/Tablet View: Carousel */}
+              <div className="lg:hidden">
+                <Carousel
+                  plugins={[featuredProductPlugin.current]}
+                  className="w-full"
+                  opts={{
+                    align: "start",
+                    loop: true,
+                  }}
+                >
+                  <CarouselContent className="-ml-4">
+                    {featuredProducts.map(product => (
+                      <CarouselItem key={product.id} className="pl-4 basis-full md:basis-1/2">
+                        {renderProductCard(product)}
                       </CarouselItem>
-                    )
-                  })}
-                </CarouselContent>
-              </Carousel>
-            )
+                    ))}
+                  </CarouselContent>
+                </Carousel>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-10">
+              <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-2 text-lg font-medium text-foreground">No Products Available</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                We are currently adding new products. Please check back soon!
+              </p>
+            </div>
           )}
           
           <div className="flex justify-center mt-12">

@@ -69,6 +69,26 @@ const heroSlides = [
     imageUrl: '/hero_section_happy_customer.jpg',
     imageAlt: 'Happy family enjoying their cool home',
     aiHint: 'family living room'
+  },
+  {
+    titleMain: 'Seamless AC Installation - ',
+    titleHighlight: 'By Certified Experts',
+    description: 'Get your new or used AC unit installed perfectly by our professional team. We guarantee a fast, clean, and reliable setup for optimal performance.',
+    buttonText: 'Learn More',
+    buttonLink: '/services',
+    imageUrl: '/hero_section_expert_service.jpg',
+    imageAlt: 'Professional AC installation service',
+    aiHint: 'technician installing ac'
+  },
+  {
+    titleMain: 'Your Trusted Partner - ',
+    titleHighlight: 'For Cooling Solutions',
+    description: 'With over 16 years of experience, we provide not just products, but peace of mind. Your comfort is our business.',
+    buttonText: 'About Us',
+    buttonLink: '/about',
+    imageUrl: '/images/about_us.jpg',
+    imageAlt: 'Our dedicated team',
+    aiHint: 'team meeting office'
   }
 ];
 

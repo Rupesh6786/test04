@@ -56,7 +56,6 @@ import {
   FirestoreError,
   collectionGroup,
   onSnapshot,
-  orderBy,
   serverTimestamp,
 } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
@@ -110,7 +109,7 @@ export default function AdminOrdersPage() {
             usersMap.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
         });
 
-        const ordersQuery = query(collectionGroup(db, 'orders'), orderBy('createdAt', 'desc'));
+        const ordersQuery = query(collectionGroup(db, 'orders'));
         
         const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
             const fetchedOrders = snapshot.docs.map(orderDoc => {
@@ -125,6 +124,13 @@ export default function AdminOrdersPage() {
                     originalUserId: orderData.userId,
                     createdAt: orderData.createdAt instanceof Timestamp ? orderData.createdAt.toDate() : new Date(orderData.createdAt as any),
                 } as EnrichedOrder;
+            });
+            
+            // Sort by creation date descending on the client
+            fetchedOrders.sort((a, b) => {
+                const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+                const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+                return dateB - dateA;
             });
             
             setAllOrders(fetchedOrders);
@@ -386,4 +392,3 @@ export default function AdminOrdersPage() {
     </div>
   );
 }
-

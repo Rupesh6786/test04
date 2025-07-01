@@ -235,19 +235,19 @@ export default function HomePage() {
                             alt={`${product.brand} ${product.model}`}
                             width={400}
                             height={300}
-                            className="object-cover w-full h-48"
+                            className="object-cover w-full h-72"
                           />
                         </Link>
                       </CardHeader>
-                      <CardContent className="p-4 flex-grow flex flex-col">
+                      <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
                         <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
                         <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
                         <p className="text-sm text-primary font-semibold mt-1 capitalize">{categoryInfo}</p>
                         <div className="flex-grow" />
                       </CardContent>
-                      <CardFooter className="p-4 pt-0">
-                        <Link href={`/products/${product.id}`} className="w-full">
-                          <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">Shop Now</Button>
+                      <CardFooter className="p-4 pt-0 flex justify-center">
+                        <Link href={`/products/${product.id}`}>
+                          <Button className="bg-accent hover:bg-accent/90 text-accent-foreground px-6">Shop Now</Button>
                         </Link>
                       </CardFooter>
                     </Card>

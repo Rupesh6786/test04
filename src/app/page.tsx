@@ -136,7 +136,7 @@ export default function HomePage() {
                         </Button>
                       </Link>
                     </div>
-                    <div className="relative h-80 md:h-[450px] group">
+                    <div className="relative h-64 md:h-[450px] group">
                       <div className="absolute inset-0 bg-primary/30 rounded-lg transform -rotate-3 group-hover:rotate-0 transition-transform duration-300"></div>
                       <Image
                         src={slide.imageUrl}

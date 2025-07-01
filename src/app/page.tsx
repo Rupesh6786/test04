@@ -49,7 +49,7 @@ const heroSlides = [
     description: 'From routine maintenance and gas charging to complex repairs and installations, our certified technicians are ready to help.',
     buttonText: 'Book a Service',
     buttonLink: '/services',
-    imageUrl: 'https://placehold.co/600x450.png',
+    imageUrl: '/hero_section_expert_service.jpg',
     imageAlt: 'Technician servicing an AC unit',
     aiHint: 'technician ac service'
   },
@@ -58,7 +58,7 @@ const heroSlides = [
     description: 'We are dedicated to providing exceptional service and building lasting relationships. See what our customers have to say.',
     buttonText: 'Read Testimonials',
     buttonLink: '#testimonials',
-    imageUrl: 'https://placehold.co/600x450.png',
+    imageUrl: '/hero_section_happy_customer.jpg',
     imageAlt: 'Happy family enjoying their cool home',
     aiHint: 'family living room'
   },
@@ -67,7 +67,7 @@ const heroSlides = [
     description: 'Every pre-owned AC unit undergoes rigorous testing and quality checks to ensure it meets our high standards of performance and reliability.',
     buttonText: 'Why Choose Us',
     buttonLink: '#why-choose-us',
-    imageUrl: 'https://placehold.co/600x450.png',
+    imageUrl: '/hero_section_quality_trust.jpg',
     imageAlt: 'AC unit with a quality check seal',
     aiHint: 'quality seal certificate'
   },
@@ -76,7 +76,7 @@ const heroSlides = [
     description: 'Explore our wide range of AC units in person and get expert advice from our friendly team. We\'re ready to help you find the perfect fit.',
     buttonText: 'Find Our Store',
     buttonLink: '/locate-store',
-    imageUrl: 'https://placehold.co/600x450.png',
+    imageUrl: '/hero_section_visit_store.jpg',
     imageAlt: 'Map pointing to a store location',
     aiHint: 'store map location'
   }

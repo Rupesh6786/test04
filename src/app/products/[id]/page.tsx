@@ -4,7 +4,6 @@
 import type { Product } from '@/types';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -14,17 +13,21 @@ import {
 } from "@/components/ui/carousel"
 import { Tag, ShieldCheck, CircleDollarSign, CheckCircle, Settings, Star, PackageSearch, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Card, CardContent } from '@/components/ui/card';
 import { CardDescription } from '@/components/ui/card';
 import Autoplay from "embla-carousel-autoplay";
+import { useAuth } from '@/contexts/AuthContext';
 
 
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.id as string;
+  const router = useRouter();
+  const { isLoggedIn, openAuthModal } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +74,15 @@ export default function ProductDetailPage() {
 
     return () => unsubscribe();
   }, [productId]);
+
+  const handleBuyNowClick = () => {
+    if (!product) return;
+    if (isLoggedIn) {
+      router.push(`/checkout/${product.id}`);
+    } else {
+      openAuthModal('login');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -210,14 +222,16 @@ export default function ProductDetailPage() {
           )}
           
           {product.stock > 0 ? (
-            <Link href={`/checkout/${product.id}`} className="w-full md:w-auto block mt-6">
-                <Button size="lg" className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-3 px-8">
-                Buy Now
-                </Button>
-            </Link>
-            ) : (
+            <Button
+              size="lg"
+              onClick={handleBuyNowClick}
+              className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-3 px-8 mt-6"
+            >
+              Buy Now
+            </Button>
+          ) : (
             <Button size="lg" className="w-full md:w-auto text-lg py-3 px-8" disabled>
-                Out of Stock
+              Out of Stock
             </Button>
           )}
         </div>

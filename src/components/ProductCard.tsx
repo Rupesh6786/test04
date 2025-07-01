@@ -1,7 +1,10 @@
+
 "use client";
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tag, CircleDollarSign, PackageSearch, ShieldCheck } from 'lucide-react';
@@ -12,6 +15,9 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
+  const { isLoggedIn, openAuthModal } = useAuth();
+
   const stockValue = Number(product.stock);
   const isAvailable = !isNaN(stockValue) && stockValue > 0;
 
@@ -19,6 +25,14 @@ export function ProductCard({ product }: ProductCardProps) {
   
   const hasDiscount = product.discountPercentage && product.discountPercentage > 0;
   const discountedPrice = hasDiscount ? product.price * (1 - product.discountPercentage! / 100) : product.price;
+
+  const handleBuyNowClick = () => {
+    if (isLoggedIn) {
+      router.push(`/checkout/${product.id}`);
+    } else {
+      openAuthModal('login');
+    }
+  };
 
   return (
     <Card className="flex flex-col overflow-hidden h-full hover:shadow-xl transition-shadow duration-300">
@@ -75,9 +89,9 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardFooter className="p-4 pt-0">
         <div className="flex space-x-2 w-full">
           {isAvailable ? (
-              <Link href={`/checkout/${product.id}`} className="flex-1">
-                  <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">Buy Now</Button>
-              </Link>
+            <Button onClick={handleBuyNowClick} className="flex-1 w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+              Buy Now
+            </Button>
           ) : (
               <Button className="flex-1" disabled>Out of Stock</Button>
           )}

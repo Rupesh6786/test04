@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -20,6 +20,7 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '@/contexts/AuthContext';
 
 const enquirySchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -33,6 +34,7 @@ type EnquiryFormValues = z.infer<typeof enquirySchema>;
 export function ContactForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { currentUser } = useAuth();
 
   const form = useForm<EnquiryFormValues>({
     resolver: zodResolver(enquirySchema),
@@ -43,6 +45,17 @@ export function ContactForm() {
       message: '',
     },
   });
+
+  useEffect(() => {
+    if (currentUser) {
+      form.reset({
+        name: currentUser.displayName || '',
+        email: currentUser.email || '',
+        subject: '',
+        message: '',
+      });
+    }
+  }, [currentUser, form]);
 
   const onSubmit = async (data: EnquiryFormValues) => {
     setIsSubmitting(true);

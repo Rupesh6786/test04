@@ -54,7 +54,7 @@ export default function ContactUsPage() {
                     </CardContent>
                 </div>
                  <div className="bg-primary/5 p-4 sm:p-8">
-                    <h3 className="font-headline text-xl sm:text-2xl font-semibold text-foreground mb-4">Send us a Message</h3>
+                    <h3 className="font-headline text-xl sm:text-2xl font-semibold text-foreground mb-4">Enquiry</h3>
                     <ContactForm />
                 </div>
             </Card>

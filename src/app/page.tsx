@@ -313,7 +313,7 @@ export default function HomePage() {
       <section id="testimonials" className="py-16 md:py-24 bg-card">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl sm:text-4xl font-semibold text-foreground mb-4">
+            <h2 className="font-headline text-[17px] sm:text-3xl font-semibold text-foreground mb-4">
               Trusted by Thousands
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -324,7 +324,7 @@ export default function HomePage() {
             <Card className="bg-background p-6 shadow-lg flex flex-col justify-between hover:-translate-y-1 transition-transform">
               <div>
                 <Quote className="w-10 h-10 text-primary/30 mb-4" strokeWidth={1.5} />
-                <blockquote className="text-foreground/80 text-lg leading-relaxed mb-6">
+                <blockquote className="text-foreground/80 text-[15px] sm:text-lg leading-relaxed mb-6">
                   "The best service I have ever received. The technicians were professional and fixed my AC in no time. Their attention to detail and customer care is top-notch. Highly recommended!"
                 </blockquote>
               </div>
@@ -341,7 +341,7 @@ export default function HomePage() {
             <Card className="bg-background p-6 shadow-lg flex flex-col justify-between hover:-translate-y-1 transition-transform">
               <div>
                 <Quote className="w-10 h-10 text-primary/30 mb-4" strokeWidth={1.5} />
-                <blockquote className="text-foreground/80 text-lg leading-relaxed mb-6">
+                <blockquote className="text-foreground/80 text-[15px] sm:text-lg leading-relaxed mb-6">
                   "I bought a second-hand AC and it's working like new. The price was great and the installation team was incredibly efficient and clean. Thank you, Classic-Solution!"
                 </blockquote>
               </div>

@@ -72,7 +72,7 @@ const heroSlides = [
     description: 'Every pre-owned AC unit undergoes rigorous testing and quality checks to ensure it meets our high standards of performance and reliability.',
     buttonText: 'Why Choose Us',
     buttonLink: '#why-choose-us',
-    imageUrl: '/images/media_range_of_ac.jpg',
+    imageUrl: '/hero_section_quality_trust.jpg',
     imageAlt: 'AC unit with a quality check seal',
     aiHint: 'quality seal certificate'
   },
@@ -81,7 +81,7 @@ const heroSlides = [
     description: 'Explore our wide range of AC units in person and get expert advice from our friendly team. We\'re ready to help you find the perfect fit.',
     buttonText: 'Find Our Store',
     buttonLink: '/locate-store',
-    imageUrl: '/images/about_us.jpg',
+    imageUrl: '/hero_section_visit_store.jpg',
     imageAlt: 'Map pointing to a store location',
     aiHint: 'store map location'
   }

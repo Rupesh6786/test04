@@ -4,12 +4,16 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Users, CircleDollarSign, CalendarCheck, Quote } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Award, Users, CircleDollarSign, CalendarCheck, Quote, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
+import type { Product } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const whyChooseUsItems = [
   {
@@ -84,6 +88,47 @@ const heroSlides = [
 
 export default function HomePage() {
   const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const productsRef = collection(db, "products");
+    const q = query(
+      productsRef,
+      where("stock", ">", 0),
+      orderBy("createdAt", "desc"),
+      limit(3)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedProducts: Product[] = [];
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        fetchedProducts.push({
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
+        } as Product);
+      });
+      setFeaturedProducts(fetchedProducts);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching featured products: ", error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+  
+  const getRatingInfo = (features?: string) => {
+    if (!features) return '';
+    const lowerFeatures = features.toLowerCase();
+    if (lowerFeatures.includes('5 star')) return '5 Star';
+    if (lowerFeatures.includes('4 star')) return '4 Star';
+    if (lowerFeatures.includes('3 star')) return '3 Star';
+    return '';
+  };
 
   return (
     <>
@@ -160,17 +205,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products Teaser (Optional) */}
+      {/* Featured Products Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-headline text-3xl sm:text-4xl font-semibold text-center text-foreground mb-12">
-            Featured Products
-          </h2>
-          <div className="text-center mb-8">
-             <p className="text-lg text-muted-foreground">Check out some of our top-selling AC units.</p>
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-3xl sm:text-4xl font-semibold text-foreground">
+              Featured Products
+            </h2>
+            <p className="text-lg text-muted-foreground mt-2">Check out some of our top-selling AC units.</p>
           </div>
-          {/* Placeholder for a few product cards or a link to products page */}
-          <div className="flex justify-center">
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Skeleton className="h-96 w-full rounded-lg" />
+              <Skeleton className="h-96 w-full rounded-lg" />
+              <Skeleton className="h-96 w-full rounded-lg" />
+            </div>
+          ) : (
+            featuredProducts.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {featuredProducts.map(product => {
+                  const rating = getRatingInfo(product.features);
+                  const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''} AC`;
+
+                  return (
+                    <Card key={product.id} className="flex flex-col h-full overflow-hidden hover:shadow-xl transition-shadow">
+                      <CardHeader className="p-0">
+                        <Link href={`/products/${product.id}`}>
+                          <Image 
+                            src={product.imageUrls?.[0] || 'https://placehold.co/400x300.png'}
+                            alt={`${product.brand} ${product.model}`}
+                            width={400}
+                            height={300}
+                            className="object-cover w-full h-48"
+                          />
+                        </Link>
+                      </CardHeader>
+                      <CardContent className="p-4 flex-grow flex flex-col">
+                        <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
+                        <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
+                        <p className="text-sm text-primary font-semibold mt-1">{product.category}</p>
+                        <div className="flex-grow" />
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        <Link href={`/products/${product.id}`} className="w-full">
+                          <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">Shop Now</Button>
+                        </Link>
+                      </CardFooter>
+                    </Card>
+                  )
+                })}
+              </div>
+            )
+          )}
+          
+          <div className="flex justify-center mt-12">
             <Link href="/products">
               <Button size="lg" variant="outline" className="border-accent text-accent hover:bg-accent/10">
                 View All Products

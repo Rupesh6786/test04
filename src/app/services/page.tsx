@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef, useState, useEffect } from 'react';
@@ -9,6 +8,7 @@ import type { Service } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, Unsubscribe, Timestamp, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const IconMap: { [key: string]: React.ElementType } = {
   Wind,
@@ -27,6 +27,7 @@ const IconMap: { [key: string]: React.ElementType } = {
 export default function ServicesPage() {
   const bookingFormRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { isLoggedIn, openAuthModal } = useAuth();
   const [selectedServiceForForm, setSelectedServiceForForm] = useState<string | undefined>(undefined);
 
   const [servicesList, setServicesList] = useState<Service[]>([]);
@@ -77,6 +78,10 @@ export default function ServicesPage() {
 
 
   const handleServiceCardClick = (serviceName: string) => {
+    if (!isLoggedIn) {
+      openAuthModal('login');
+      return;
+    }
     setSelectedServiceForForm(serviceName);
     bookingFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };

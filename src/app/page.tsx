@@ -237,7 +237,7 @@ export default function HomePage() {
 
                     return (
                       <CarouselItem key={product.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                        <div className="h-full p-1">
+                        <div className="h-full">
                           <Card className="flex flex-col h-full overflow-hidden hover:shadow-xl transition-shadow items-center text-center">
                             <CardHeader className="p-0">
                               <Link href={`/products/${product.id}`}>

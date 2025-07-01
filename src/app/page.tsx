@@ -41,8 +41,7 @@ const whyChooseUsItems = [
 
 const heroSlides = [
   {
-    titleMain: 'Top Deals on Used ACs - ',
-    titleHighlight: 'Save Big Today!',
+    title: <>Top Deals on Used ACs - <span className="text-primary">Save Big Today!</span></>,
     description: 'Discover high-quality, pre-owned air conditioners at unbeatable prices. Reliable, efficient, and budget-friendly cooling solutions for your home or office.',
     buttonText: 'Explore Products',
     buttonLink: '/products',
@@ -51,8 +50,7 @@ const heroSlides = [
     aiHint: 'woman air conditioner'
   },
   {
-    titleMain: 'Expert AC Services & Repairs - ',
-    titleHighlight: "We've Got You Covered!",
+    title: <>Expert AC Services & Repairs - <span className="text-primary">We've Got You Covered!</span></>,
     description: 'From routine maintenance and gas charging to complex repairs and installations, our certified technicians are ready to help.',
     buttonText: 'Book a Service',
     buttonLink: '/services',
@@ -61,8 +59,7 @@ const heroSlides = [
     aiHint: 'technician ac service'
   },
   {
-    titleMain: 'Join 10,000+ Happy Customers - ',
-    titleHighlight: 'Your Comfort is Our Priority.',
+    title: <>Join 10,000+ Happy Customers - <span className="text-primary">Your Comfort is Our Priority.</span></>,
     description: 'We are dedicated to providing exceptional service and building lasting relationships. See what our customers have to say.',
     buttonText: 'Read Testimonials',
     buttonLink: '#testimonials',
@@ -71,26 +68,25 @@ const heroSlides = [
     aiHint: 'family living room'
   },
   {
-    titleMain: 'Seamless AC Installation - ',
-    titleHighlight: 'By Certified Experts',
-    description: 'Get your new or used AC unit installed perfectly by our professional team. We guarantee a fast, clean, and reliable setup for optimal performance.',
-    buttonText: 'Learn More',
-    buttonLink: '/services',
-    imageUrl: '/hero_section_expert_service.jpg',
-    imageAlt: 'Professional AC installation service',
-    aiHint: 'technician installing ac'
+    title: <>Quality You Can Trust - <span className="text-primary">Guaranteed Performance.</span></>,
+    description: 'Every pre-owned AC unit undergoes rigorous testing and quality checks to ensure it meets our high standards of performance and reliability.',
+    buttonText: 'Why Choose Us',
+    buttonLink: '#why-choose-us',
+    imageUrl: '/images/media_range_of_ac.jpg',
+    imageAlt: 'AC unit with a quality check seal',
+    aiHint: 'quality seal certificate'
   },
   {
-    titleMain: 'Your Trusted Partner - ',
-    titleHighlight: 'For Cooling Solutions',
-    description: 'With over 16 years of experience, we provide not just products, but peace of mind. Your comfort is our business.',
-    buttonText: 'About Us',
-    buttonLink: '/about',
+    title: <>Visit Our Store in Mumbai - <span className="text-primary">Get Expert Advice.</span></>,
+    description: 'Explore our wide range of AC units in person and get expert advice from our friendly team. We\'re ready to help you find the perfect fit.',
+    buttonText: 'Find Our Store',
+    buttonLink: '/locate-store',
     imageUrl: '/images/about_us.jpg',
-    imageAlt: 'Our dedicated team',
-    aiHint: 'team meeting office'
+    imageAlt: 'Map pointing to a store location',
+    aiHint: 'store map location'
   }
 ];
+
 
 export default function HomePage() {
   const heroPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
@@ -145,7 +141,7 @@ export default function HomePage() {
                   <div className="grid md:grid-cols-2 gap-8 items-center">
                     <div className="text-center md:text-left">
                       <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
-                        {slide.titleMain}<span className="text-primary">{slide.titleHighlight}</span>
+                        {slide.title}
                       </h1>
                       <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto md:mx-0">
                         {slide.description}

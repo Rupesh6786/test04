@@ -119,11 +119,21 @@ export default function HomePage() {
   };
   
   const getCategoryInfo = (product: Product) => {
-    let info = product.category || '';
+    let baseCategory = product.category || '';
+    // remove "AC" from category if it exists to avoid duplication
+    if (baseCategory.toLowerCase().endsWith(' ac')) {
+        baseCategory = baseCategory.slice(0, -3);
+    }
+    
+    let info = baseCategory;
+
     if (product.features?.toLowerCase().includes('inverter')) {
       info += ' Inverter';
     }
-    return info;
+    
+    info += ' AC';
+    
+    return info.trim();
   }
 
   const renderProductCard = (product: Product) => {
@@ -131,8 +141,7 @@ export default function HomePage() {
     const categoryInfo = getCategoryInfo(product);
     const hasDiscount = product.discountPercentage && product.discountPercentage > 0;
     
-    // Combine details into a single title string, filtering out empty values.
-    const productTitle = [product.brand, product.capacity, rating, categoryInfo].filter(Boolean).join(' ');
+    const productTitle = [product.brand, product.capacity, rating].filter(Boolean).join(' ');
 
     return (
       <div className="h-full">
@@ -155,7 +164,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
             <CardTitle className="font-headline text-lg mb-1">{productTitle}</CardTitle>
-            {/* The capacity/rating and category lines are now combined into the title above. */}
+            <p className="text-sm text-muted-foreground mb-2">{categoryInfo}</p>
             <div className="flex-grow" />
           </CardContent>
           <CardFooter className="p-4 pt-0 flex justify-center">

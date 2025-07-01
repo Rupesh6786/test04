@@ -27,7 +27,10 @@ service cloud.firestore {
         orderData.shippingAddress.line1 is string &&
         orderData.shippingAddress.city is string &&
         orderData.shippingAddress.state is string &&
-        orderData.shippingAddress.zipCode is string;
+        orderData.shippingAddress.zipCode is string &&
+        orderData.shippingAddress.country is string &&
+        orderData.shippingAddress.type is string &&
+        orderData.estimatedDeliveryDate is timestamp;
 
       let isCODValid =
         orderData.paymentMethod == 'COD' &&

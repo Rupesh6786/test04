@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Wrench, Wind, Pipette, Unplug, Settings, ThermometerSun, Cpu, Replace, PackagePlus, Cog, Loader2, Clock, IndianRupee } from 'lucide-react';
 import type { Service } from '@/types';
 import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, Unsubscribe, Timestamp, orderBy, where } from 'firebase/firestore';
+import { collection, query, onSnapshot, Unsubscribe, Timestamp, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 const IconMap: { [key: string]: React.ElementType } = {
@@ -35,19 +35,29 @@ export default function ServicesPage() {
   useEffect(() => {
     setIsLoading(true);
     const servicesColRef = collection(db, "services");
-    // Updated query to only fetch 'Active' services to comply with Firestore security rules for non-admin users.
-    const q = query(servicesColRef, where("status", "==", "Active"), orderBy("createdAt", "asc"));
+    // Query only by status to avoid needing a composite index. Sorting is done client-side.
+    const q = query(servicesColRef, where("status", "==", "Active"));
 
     const unsubscribe: Unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const fetchedServices: Service[] = [];
-        snapshot.forEach((docSnap) => {
-          fetchedServices.push({
+        const fetchedServices: Service[] = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          return {
             id: docSnap.id,
-            ...docSnap.data(),
-          } as Service);
+            ...data,
+            // Ensure createdAt is a Date object for consistent sorting
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
+          } as Service;
         });
+
+        // Sort the services on the client-side by creation date (ascending)
+        fetchedServices.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateA - dateB;
+        });
+
         setServicesList(fetchedServices);
         setIsLoading(false);
       },

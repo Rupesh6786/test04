@@ -73,7 +73,8 @@ const heroSlides = [
 ];
 
 export default function HomePage() {
-  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
+  const heroPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
+  const featuredProductPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -99,8 +100,8 @@ export default function HomePage() {
         } as Product);
       });
       
-      // Filter for in-stock products and limit to 3 on the client-side
-      const inStockProducts = fetchedProducts.filter(p => p.stock > 0).slice(0, 3);
+      // Filter for in-stock products on the client-side
+      const inStockProducts = fetchedProducts.filter(p => p.stock > 0);
       setFeaturedProducts(inStockProducts);
       setIsLoading(false);
     }, (error) => {
@@ -133,7 +134,7 @@ export default function HomePage() {
       {/* Hero Section Carousel */}
       <section className="bg-gradient-to-r from-primary/20 via-background to-background relative overflow-hidden">
         <Carousel
-          plugins={[plugin.current]}
+          plugins={[heroPlugin.current]}
           className="w-full embla-fade"
           opts={{loop: true}}
         >
@@ -220,40 +221,53 @@ export default function HomePage() {
             </div>
           ) : (
             featuredProducts.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredProducts.map(product => {
-                  const rating = getRatingInfo(product.features);
-                  const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''}`;
-                  const categoryInfo = getCategoryInfo(product);
+              <Carousel
+                plugins={[featuredProductPlugin.current]}
+                className="w-full"
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+              >
+                <CarouselContent className="-ml-4">
+                  {featuredProducts.map(product => {
+                    const rating = getRatingInfo(product.features);
+                    const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''}`;
+                    const categoryInfo = getCategoryInfo(product);
 
-                  return (
-                    <Card key={product.id} className="flex flex-col h-full overflow-hidden hover:shadow-xl transition-shadow">
-                      <CardHeader className="p-0">
-                        <Link href={`/products/${product.id}`}>
-                          <Image 
-                            src={product.imageUrls?.[0] || 'https://placehold.co/400x300.png'}
-                            alt={`${product.brand} ${product.model}`}
-                            width={400}
-                            height={300}
-                            className="object-cover w-full h-72"
-                          />
-                        </Link>
-                      </CardHeader>
-                      <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
-                        <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
-                        <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
-                        <p className="text-sm text-primary font-semibold mt-1 capitalize">{categoryInfo}</p>
-                        <div className="flex-grow" />
-                      </CardContent>
-                      <CardFooter className="p-4 pt-0 flex justify-center">
-                        <Link href={`/products/${product.id}`}>
-                          <Button className="bg-accent hover:bg-accent/90 text-accent-foreground px-6">Shop Now</Button>
-                        </Link>
-                      </CardFooter>
-                    </Card>
-                  )
-                })}
-              </div>
+                    return (
+                      <CarouselItem key={product.id} className="pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                        <div className="h-full p-1">
+                          <Card className="flex flex-col h-full overflow-hidden hover:shadow-xl transition-shadow items-center text-center">
+                            <CardHeader className="p-0">
+                              <Link href={`/products/${product.id}`}>
+                                <Image 
+                                  src={product.imageUrls?.[0] || 'https://placehold.co/400x300.png'}
+                                  alt={`${product.brand} ${product.model}`}
+                                  width={400}
+                                  height={300}
+                                  className="object-cover w-full h-72"
+                                />
+                              </Link>
+                            </CardHeader>
+                            <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
+                              <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
+                              <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
+                              <p className="text-sm text-primary font-semibold mt-1 capitalize">{categoryInfo}</p>
+                              <div className="flex-grow" />
+                            </CardContent>
+                            <CardFooter className="p-4 pt-0 flex justify-center">
+                              <Link href={`/products/${product.id}`}>
+                                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground px-6">Shop Now</Button>
+                              </Link>
+                            </CardFooter>
+                          </Card>
+                        </div>
+                      </CarouselItem>
+                    )
+                  })}
+                </CarouselContent>
+              </Carousel>
             )
           )}
           

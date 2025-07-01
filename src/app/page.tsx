@@ -84,7 +84,7 @@ export default function HomePage() {
     const q = query(
       productsRef,
       orderBy("createdAt", "desc"),
-      limit(6)
+      limit(3)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

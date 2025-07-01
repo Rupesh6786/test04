@@ -6,6 +6,7 @@ export interface Product {
   brand: string;
   model: string;
   price: number;
+  discountPercentage?: number;
   capacity: string;
   stock: number;
   condition: "New" | "Used";

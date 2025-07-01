@@ -15,9 +15,10 @@ export function ProductCard({ product }: ProductCardProps) {
   const stockValue = Number(product.stock);
   const isAvailable = !isNaN(stockValue) && stockValue > 0;
 
-  // Use the first available image from either the new array or the old field
   const displayImage = (product.imageUrls && product.imageUrls[0]) || product.imageUrl || "https://placehold.co/400x300.png";
-
+  
+  const hasDiscount = product.discountPercentage && product.discountPercentage > 0;
+  const discountedPrice = hasDiscount ? product.price * (1 - product.discountPercentage! / 100) : product.price;
 
   return (
     <Card className="flex flex-col overflow-hidden h-full hover:shadow-xl transition-shadow duration-300">
@@ -31,6 +32,11 @@ export function ProductCard({ product }: ProductCardProps) {
             className="object-cover w-full h-48"
           />
         </Link>
+        {hasDiscount && (
+             <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground px-2 py-1 text-xs font-bold rounded-md shadow-lg transform -rotate-6">
+                {product.discountPercentage}% OFF
+            </div>
+        )}
         <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 text-xs font-semibold rounded-md shadow">
           {product.condition}
         </div>
@@ -42,8 +48,12 @@ export function ProductCard({ product }: ProductCardProps) {
           </Link>
         </CardTitle>
         <div className="flex items-center space-x-2 mb-2">
-          <CircleDollarSign className="w-5 h-5 text-accent" />
-          <p className="text-2xl font-semibold text-accent">₹{product.price.toLocaleString()}</p>
+            <p className="text-2xl font-semibold text-accent">₹{discountedPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            {hasDiscount && (
+                <p className="text-lg font-medium text-muted-foreground line-through">
+                    ₹{product.price.toLocaleString()}
+                </p>
+            )}
         </div>
         <div className="space-y-1 text-sm text-muted-foreground mb-3">
           <div className="flex items-center">

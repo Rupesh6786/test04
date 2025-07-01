@@ -17,6 +17,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, onSnapshot, Unsubscribe, doc, Timestamp, addDoc, runTransaction, serverTimestamp } from "firebase/firestore";
 import type {} from '@/types/razorpay'; 
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const RAZORPAY_KEY_ID = "rzp_test_lw1YZ20Ss4PtqR"; 
 
@@ -167,6 +168,10 @@ export default function CheckoutPage() {
       throw e;
     }
   }, []);
+  
+  const hasDiscount = product?.discountPercentage && product.discountPercentage > 0;
+  const finalPrice = hasDiscount ? product!.price * (1 - product!.discountPercentage! / 100) : product?.price || 0;
+
 
   const handlePlaceOrder = useCallback(async () => {
     if (!isLoggedIn || !currentUser) {
@@ -204,7 +209,7 @@ export default function CheckoutPage() {
       productDetails: {
         brand: product.brand,
         model: product.model,
-        price: product.price * 100, // Store in paise for consistency
+        price: finalPrice * 100,
         imageUrl: (product.imageUrls && product.imageUrls[0]) || product.imageUrl || "",
       },
       shippingAddress: selectedAddr,
@@ -238,7 +243,7 @@ export default function CheckoutPage() {
             return;
         }
         
-        const amountInPaise = product.price * 100;
+        const amountInPaise = Math.round(finalPrice * 100);
 
         const options: RazorpayOptions = {
             key: RAZORPAY_KEY_ID,
@@ -284,7 +289,7 @@ export default function CheckoutPage() {
             setIsProcessingPayment(false);
         }
     }
-  }, [isLoggedIn, currentUser, selectedAddressId, product, toast, openAuthModal, router, addresses, isRazorpayScriptLoaded, paymentMethod, createOrderAndReduceStock]);
+  }, [isLoggedIn, currentUser, selectedAddressId, product, toast, openAuthModal, router, addresses, isRazorpayScriptLoaded, paymentMethod, createOrderAndReduceStock, finalPrice]);
   
   const getAddressIcon = (type: Address['type']) => {
     switch (type) {
@@ -360,17 +365,23 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Price:</span>
-                  <span>₹{product.price.toLocaleString()}</span>
+                 <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Original Price:</span>
+                    <span className={cn(hasDiscount && "line-through")}>₹{product.price.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between">
+                {hasDiscount && (
+                    <div className="flex justify-between text-sm text-green-600">
+                        <span>Discount ({product.discountPercentage}%):</span>
+                        <span>- ₹{(product.price - finalPrice).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    </div>
+                )}
+                <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Delivery:</span>
-                  <span>Free (Standard)</span>
+                  <span>Free</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                   <span>Total:</span>
-                  <span className="text-accent">₹{product.price.toLocaleString()}</span>
+                  <span className="text-accent">₹{finalPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                 </div>
               </div>
             </CardContent>
@@ -484,7 +495,7 @@ export default function CheckoutPage() {
                 }
             >
                 {isProcessingPayment ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-                {isProcessingPayment ? 'Processing...' : 'Place Order'}
+                {isProcessingPayment ? 'Processing...' : `Place Order & Pay ₹${finalPrice.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
             </Button>
           )}
            {(RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID" || !RAZORPAY_KEY_ID) && isLoggedIn && paymentMethod === 'online' && (

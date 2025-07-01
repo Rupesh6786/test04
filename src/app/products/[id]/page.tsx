@@ -96,10 +96,12 @@ export default function ProductDetailPage() {
 
   const featuresArray = product.features ? product.features.split(',').map(f => f.trim()) : [];
 
-  // Handle both imageUrl (string) and imageUrls (array of strings) for the carousel
   const carouselImageUrls = (product.imageUrls && product.imageUrls.length > 0)
     ? product.imageUrls
     : (product.imageUrl ? [product.imageUrl] : []);
+
+  const hasDiscount = product.discountPercentage && product.discountPercentage > 0;
+  const discountedPrice = hasDiscount ? product.price * (1 - product.discountPercentage! / 100) : product.price;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -148,14 +150,25 @@ export default function ProductDetailPage() {
         </Carousel>
 
         <div className="space-y-6">
-          <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 text-sm font-medium rounded-full">
-            {product.condition}
-          </span>
+          <div className="flex gap-2 items-center">
+            <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 text-sm font-medium rounded-full">
+              {product.condition}
+            </span>
+             {hasDiscount && (
+              <span className="inline-block bg-destructive text-destructive-foreground px-3 py-1 text-sm font-bold rounded-full">
+                {product.discountPercentage}% OFF
+              </span>
+            )}
+          </div>
           <h1 className="font-headline text-4xl font-bold text-foreground">{product.brand} {product.model}</h1>
           
-          <div className="flex items-center space-x-2">
-            <CircleDollarSign className="w-8 h-8 text-accent" />
-            <p className="text-4xl font-semibold text-accent">₹{product.price.toLocaleString()}</p>
+          <div className="flex items-center space-x-4">
+            <p className="text-4xl font-semibold text-accent">₹{discountedPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            {hasDiscount && (
+                <p className="text-2xl font-medium text-muted-foreground line-through">
+                    ₹{product.price.toLocaleString()}
+                </p>
+            )}
           </div>
            <p className={`text-sm font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
             {product.stock > 0 ? `${product.stock} units in stock` : 'Out of Stock'}

@@ -52,6 +52,7 @@ const productSchema = z.object({
   imageUrls: z.array(z.string().min(1, { message: "Image path cannot be empty." })).min(1, { message: "At least one image is required." }),
   features: z.string().optional(),
   warranty: z.string().optional(),
+  discountPercentage: z.coerce.number().int().min(0).max(99).optional().or(z.literal('')),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -80,7 +81,7 @@ export function ProductFormModal({
     defaultValues: {
       brand: '', model: '', capacity: '', price: 0, stock: 1,
       condition: 'Used', description: '', category: '', imageUrls: [],
-      features: '', warranty: '',
+      features: '', warranty: '', discountPercentage: undefined,
     },
   });
   
@@ -93,12 +94,12 @@ export function ProductFormModal({
 
   useEffect(() => {
     if (productToEdit) {
-      form.reset({ ...productToEdit, features: productToEdit.features || '', warranty: productToEdit.warranty || '', imageUrls: productToEdit.imageUrls || [] });
+      form.reset({ ...productToEdit, features: productToEdit.features || '', warranty: productToEdit.warranty || '', imageUrls: productToEdit.imageUrls || [], discountPercentage: productToEdit.discountPercentage || undefined });
     } else {
       form.reset({
         brand: '', model: '', capacity: '', price: 0, stock: 1,
         condition: 'Used', description: '', category: '', imageUrls: [],
-        features: '', warranty: '',
+        features: '', warranty: '', discountPercentage: undefined,
       });
     }
     setSelectedFile(null);
@@ -173,7 +174,12 @@ export function ProductFormModal({
   const onSubmit = async (data: ProductFormValues) => {
     setIsSubmitting(true);
     try {
-      const productData = { ...data, updatedAt: serverTimestamp() };
+      const productData = { 
+        ...data,
+        discountPercentage: data.discountPercentage ? Number(data.discountPercentage) : null,
+        updatedAt: serverTimestamp() 
+      };
+
       if (productToEdit) {
         const productRef = doc(db, 'products', productToEdit.id);
         await setDoc(productRef, productData, { merge: true });
@@ -215,7 +221,7 @@ export function ProductFormModal({
               <FormField control={form.control} name="category" render={({ field }) => ( <FormItem><FormLabel>Category</FormLabel><FormControl><Input placeholder="e.g., Split AC, Window AC" {...field} /></FormControl><FormMessage /></FormItem> )} />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <FormField control={form.control} name="price" render={({ field }) => ( <FormItem><FormLabel>Price (₹)</FormLabel><FormControl><Input type="number" placeholder="e.g., 25000" {...field} /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="stock" render={({ field }) => ( <FormItem><FormLabel>Stock</FormLabel><FormControl><Input type="number" placeholder="e.g., 10" {...field} /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="condition" render={({ field }) => (
@@ -228,6 +234,25 @@ export function ProductFormModal({
                   <FormMessage />
                 </FormItem>
               )} />
+              <FormField
+                control={form.control}
+                name="discountPercentage"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Discount (%)</FormLabel>
+                    <FormControl>
+                        <Input
+                            type="number"
+                            placeholder="e.g., 10"
+                            {...field}
+                            onChange={event => field.onChange(event.target.value === '' ? '' : parseInt(event.target.value, 10))}
+                            value={field.value ?? ''}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             </div>
 
             <FormField control={form.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Detailed product description..." {...field} rows={5} /></FormControl><FormMessage /></FormItem> )} />

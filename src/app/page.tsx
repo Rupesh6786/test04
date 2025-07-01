@@ -11,9 +11,10 @@ import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carouse
 import Autoplay from 'embla-carousel-autoplay';
 import { useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
 import type { Product } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const whyChooseUsItems = [
   {
@@ -40,7 +41,8 @@ const whyChooseUsItems = [
 
 const heroSlides = [
   {
-    title: <>Top Deals on Used ACs - <span className="text-primary">Save Big Today!</span></>,
+    titleMain: 'Top Deals on Used ACs - ',
+    titleHighlight: 'Save Big Today!',
     description: 'Discover high-quality, pre-owned air conditioners at unbeatable prices. Reliable, efficient, and budget-friendly cooling solutions for your home or office.',
     buttonText: 'Explore Products',
     buttonLink: '/products',
@@ -49,7 +51,8 @@ const heroSlides = [
     aiHint: 'woman air conditioner'
   },
   {
-    title: <>Expert AC Services & Repairs - <span className="text-primary">We've Got You Covered!</span></>,
+    titleMain: 'Expert AC Services & Repairs - ',
+    titleHighlight: "We've Got You Covered!",
     description: 'From routine maintenance and gas charging to complex repairs and installations, our certified technicians are ready to help.',
     buttonText: 'Book a Service',
     buttonLink: '/services',
@@ -58,47 +61,31 @@ const heroSlides = [
     aiHint: 'technician ac service'
   },
   {
-    title: <>Join 10,000+ Happy Customers - <span className="text-primary">Your Comfort is Our Priority.</span></>,
+    titleMain: 'Join 10,000+ Happy Customers - ',
+    titleHighlight: 'Your Comfort is Our Priority.',
     description: 'We are dedicated to providing exceptional service and building lasting relationships. See what our customers have to say.',
     buttonText: 'Read Testimonials',
     buttonLink: '#testimonials',
     imageUrl: '/hero_section_happy_customer.jpg',
     imageAlt: 'Happy family enjoying their cool home',
     aiHint: 'family living room'
-  },
-  {
-    title: <>Quality You Can Trust - <span className="text-primary">Guaranteed Performance.</span></>,
-    description: 'Every pre-owned AC unit undergoes rigorous testing and quality checks to ensure it meets our high standards of performance and reliability.',
-    buttonText: 'Why Choose Us',
-    buttonLink: '#why-choose-us',
-    imageUrl: '/hero_section_quality_trust.jpg',
-    imageAlt: 'AC unit with a quality check seal',
-    aiHint: 'quality seal certificate'
-  },
-  {
-    title: <>Visit Our Store in Mumbai - <span className="text-primary">Get Expert Advice.</span></>,
-    description: 'Explore our wide range of AC units in person and get expert advice from our friendly team. We\'re ready to help you find the perfect fit.',
-    buttonText: 'Find Our Store',
-    buttonLink: '/locate-store',
-    imageUrl: '/hero_section_visit_store.jpg',
-    imageAlt: 'Map pointing to a store location',
-    aiHint: 'store map location'
   }
 ];
 
 export default function HomePage() {
-  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
+  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
     const productsRef = collection(db, "products");
+    // Simplified query to avoid composite index requirement.
+    // Fetches the 6 most recent products, filtering for stock happens on the client.
     const q = query(
       productsRef,
-      where("stock", ">", 0),
       orderBy("createdAt", "desc"),
-      limit(3)
+      limit(6)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -111,7 +98,10 @@ export default function HomePage() {
           createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
         } as Product);
       });
-      setFeaturedProducts(fetchedProducts);
+      
+      // Filter for in-stock products and limit to 3 on the client-side
+      const inStockProducts = fetchedProducts.filter(p => p.stock > 0).slice(0, 3);
+      setFeaturedProducts(inStockProducts);
       setIsLoading(false);
     }, (error) => {
       console.error("Error fetching featured products: ", error);
@@ -129,11 +119,19 @@ export default function HomePage() {
     if (lowerFeatures.includes('3 star')) return '3 Star';
     return '';
   };
+  
+  const getCategoryInfo = (product: Product) => {
+    let info = product.category || '';
+    if (product.features?.toLowerCase().includes('inverter')) {
+      info += ' Inverter';
+    }
+    return info;
+  }
 
   return (
     <>
       {/* Hero Section Carousel */}
-      <section className="bg-gradient-to-r from-primary/20 via-background to-background relative overflow-hidden py-16 md:py-24">
+      <section className="bg-gradient-to-r from-primary/20 via-background to-background relative overflow-hidden">
         <Carousel
           plugins={[plugin.current]}
           className="w-full embla-fade"
@@ -142,11 +140,11 @@ export default function HomePage() {
           <CarouselContent>
             {heroSlides.map((slide, index) => (
               <CarouselItem key={index}>
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16 md:py-24">
                   <div className="grid md:grid-cols-2 gap-8 items-center">
                     <div className="text-center md:text-left">
                       <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
-                        {slide.title}
+                        {slide.titleMain}<span className="text-primary">{slide.titleHighlight}</span>
                       </h1>
                       <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto md:mx-0">
                         {slide.description}
@@ -187,8 +185,7 @@ export default function HomePage() {
             {whyChooseUsItems.map((item, index) => (
               <Card
                 key={index}
-                className="text-center hover:shadow-xl transition-shadow duration-300 group bg-background opacity-0 animate-fade-in-up"
-                style={{ animationDelay: `${index * 150}ms` }}
+                className="text-center hover:shadow-xl transition-shadow duration-300 group bg-background"
               >
                 <CardHeader className="items-center">
                   <div className="p-4 bg-primary/10 rounded-full mb-4 group-hover:bg-primary/20 transition-colors">
@@ -226,7 +223,8 @@ export default function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {featuredProducts.map(product => {
                   const rating = getRatingInfo(product.features);
-                  const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''} AC`;
+                  const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''}`;
+                  const categoryInfo = getCategoryInfo(product);
 
                   return (
                     <Card key={product.id} className="flex flex-col h-full overflow-hidden hover:shadow-xl transition-shadow">
@@ -244,7 +242,7 @@ export default function HomePage() {
                       <CardContent className="p-4 flex-grow flex flex-col">
                         <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
                         <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
-                        <p className="text-sm text-primary font-semibold mt-1">{product.category}</p>
+                        <p className="text-sm text-primary font-semibold mt-1 capitalize">{categoryInfo}</p>
                         <div className="flex-grow" />
                       </CardContent>
                       <CardFooter className="p-4 pt-0">

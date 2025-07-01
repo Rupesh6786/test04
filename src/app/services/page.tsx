@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Wrench, Wind, Pipette, Unplug, Settings, ThermometerSun, Cpu, Replace, PackagePlus, Cog, Loader2, Clock, IndianRupee } from 'lucide-react';
 import type { Service } from '@/types';
 import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, Unsubscribe, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, Unsubscribe, Timestamp, orderBy, where } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 const IconMap: { [key: string]: React.ElementType } = {
@@ -35,21 +35,18 @@ export default function ServicesPage() {
   useEffect(() => {
     setIsLoading(true);
     const servicesColRef = collection(db, "services");
-    const q = query(servicesColRef, orderBy("createdAt", "asc"));
+    // Updated query to only fetch 'Active' services to comply with Firestore security rules for non-admin users.
+    const q = query(servicesColRef, where("status", "==", "Active"), orderBy("createdAt", "asc"));
 
     const unsubscribe: Unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const fetchedServices: Service[] = [];
         snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as Omit<Service, 'id'>;
-          // Filter for active services on the client-side
-          if (data.status === 'Active') {
-            fetchedServices.push({
-              id: docSnap.id,
-              ...data,
-            });
-          }
+          fetchedServices.push({
+            id: docSnap.id,
+            ...docSnap.data(),
+          } as Service);
         });
         setServicesList(fetchedServices);
         setIsLoading(false);

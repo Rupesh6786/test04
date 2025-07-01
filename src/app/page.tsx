@@ -1,10 +1,15 @@
 
+"use client";
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, Users, CircleDollarSign, CalendarCheck, Quote } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import { useRef } from 'react';
 
 const whyChooseUsItems = [
   {
@@ -29,42 +34,105 @@ const whyChooseUsItems = [
   },
 ];
 
+const heroSlides = [
+  {
+    title: <>Top Deals on Used ACs - <span className="text-primary">Save Big Today!</span></>,
+    description: 'Discover high-quality, pre-owned air conditioners at unbeatable prices. Reliable, efficient, and budget-friendly cooling solutions for your home or office.',
+    buttonText: 'Explore Products',
+    buttonLink: '/products',
+    imageUrl: '/hero-section.jpg',
+    imageAlt: 'Woman impressed by an AC unit',
+    aiHint: 'woman air conditioner'
+  },
+  {
+    title: <>Expert AC Services & Repairs - <span className="text-primary">We've Got You Covered!</span></>,
+    description: 'From routine maintenance and gas charging to complex repairs and installations, our certified technicians are ready to help.',
+    buttonText: 'Book a Service',
+    buttonLink: '/services',
+    imageUrl: 'https://placehold.co/600x450.png',
+    imageAlt: 'Technician servicing an AC unit',
+    aiHint: 'technician ac service'
+  },
+  {
+    title: <>Join 10,000+ Happy Customers - <span className="text-primary">Your Comfort is Our Priority.</span></>,
+    description: 'We are dedicated to providing exceptional service and building lasting relationships. See what our customers have to say.',
+    buttonText: 'Read Testimonials',
+    buttonLink: '#testimonials',
+    imageUrl: 'https://placehold.co/600x450.png',
+    imageAlt: 'Happy family enjoying their cool home',
+    aiHint: 'family living room'
+  },
+  {
+    title: <>Quality You Can Trust - <span className="text-primary">Guaranteed Performance.</span></>,
+    description: 'Every pre-owned AC unit undergoes rigorous testing and quality checks to ensure it meets our high standards of performance and reliability.',
+    buttonText: 'Why Choose Us',
+    buttonLink: '#why-choose-us',
+    imageUrl: 'https://placehold.co/600x450.png',
+    imageAlt: 'AC unit with a quality check seal',
+    aiHint: 'quality seal certificate'
+  },
+  {
+    title: <>Visit Our Store in Mumbai - <span className="text-primary">Get Expert Advice.</span></>,
+    description: 'Explore our wide range of AC units in person and get expert advice from our friendly team. We\'re ready to help you find the perfect fit.',
+    buttonText: 'Find Our Store',
+    buttonLink: '/locate-store',
+    imageUrl: 'https://placehold.co/600x450.png',
+    imageAlt: 'Map pointing to a store location',
+    aiHint: 'store map location'
+  }
+];
+
 export default function HomePage() {
+  const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true }));
+
   return (
     <>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary/20 via-background to-background py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://placehold.co/1920x1080/87CEEB/4682B4&text='')] bg-repeat"></div>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="text-center md:text-left">
-              <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
-                Top Deals on Used ACs - <span className="text-primary">Save Big Today!</span>
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto md:mx-0">
-                Discover high-quality, pre-owned air conditioners at unbeatable prices. Reliable, efficient, and budget-friendly cooling solutions for your home or office.
-              </p>
-              <Link href="/products">
-                <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg transition-transform hover:scale-105">
-                  Explore Now
-                </Button>
-              </Link>
-            </div>
-            <div className="relative h-80 md:h-[450px] group">
-               <div className="absolute inset-0 bg-primary/30 rounded-lg transform -rotate-3 group-hover:rotate-0 transition-transform duration-300"></div>
-                <Image
-                  // src="https://placehold.co/600x450.png"
-                  src="/hero-section.jpg"
-                  alt="Actress impressed by AC unit"
-                  data-ai-hint="woman air conditioner"
-                  width={600}
-                  height={450}
-                  className="rounded-lg shadow-2xl object-cover w-full h-full relative transform rotate-1 group-hover:rotate-0 transition-transform duration-300"
-                  priority
-                />
-            </div>
-          </div>
-        </div>
+      {/* Hero Section Carousel */}
+      <section className="bg-gradient-to-r from-primary/20 via-background to-background relative overflow-hidden">
+        <Carousel
+          plugins={[plugin.current]}
+          className="w-full"
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
+        >
+          <CarouselContent>
+            {heroSlides.map((slide, index) => (
+              <CarouselItem key={index}>
+                <div className="py-16 md:py-24">
+                  <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                      <div className="text-center md:text-left">
+                        <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6">
+                          {slide.title}
+                        </h1>
+                        <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto md:mx-0">
+                          {slide.description}
+                        </p>
+                        <Link href={slide.buttonLink}>
+                          <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg transition-transform hover:scale-105">
+                            {slide.buttonText}
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="relative h-80 md:h-[450px] group">
+                        <div className="absolute inset-0 bg-primary/30 rounded-lg transform -rotate-3 group-hover:rotate-0 transition-transform duration-300"></div>
+                        <Image
+                          src={slide.imageUrl}
+                          alt={slide.imageAlt}
+                          data-ai-hint={slide.aiHint}
+                          width={600}
+                          height={450}
+                          className="rounded-lg shadow-2xl object-cover w-full h-full relative transform rotate-1 group-hover:rotate-0 transition-transform duration-300"
+                          priority={index === 0}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
       </section>
 
       {/* Why Choose Us Section */}

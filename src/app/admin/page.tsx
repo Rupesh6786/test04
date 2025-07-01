@@ -18,12 +18,12 @@ import {
     Wrench,
     PackageX,
     FileClock,
-    Tag,
+    ShoppingCart,
 } from "lucide-react";
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, Timestamp, FirestoreError, where } from 'firebase/firestore';
+import { collection, getDocs, query, Timestamp, FirestoreError, where, collectionGroup } from 'firebase/firestore';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Appointment as AppointmentType, User as UserType, Product, Service } from '@/types'; 
+import type { Appointment as AppointmentType, User as UserType, Product, Service, Order } from '@/types'; 
 import { formatDistanceToNow } from 'date-fns';
 
 // Local type for enriched recent appointments
@@ -45,6 +45,7 @@ export default function AdminDashboardPage() {
     totalProducts: 0,
     outOfStockProducts: 0,
     activeServices: 0,
+    totalOrders: 0,
   });
   
   // Unified state for data fetching
@@ -85,9 +86,10 @@ export default function AdminDashboardPage() {
         const usersQuery = getDocs(collection(db, 'users'));
         const productsQuery = getDocs(collection(db, 'products'));
         const servicesQuery = getDocs(collection(db, 'services'));
+        const ordersQuery = getDocs(collectionGroup(db, 'orders'));
 
-        const [usersSnapshot, productsSnapshot, servicesSnapshot] = await Promise.all([
-          usersQuery, productsQuery, servicesQuery
+        const [usersSnapshot, productsSnapshot, servicesSnapshot, ordersSnapshot] = await Promise.all([
+          usersQuery, productsQuery, servicesQuery, ordersQuery
         ]);
 
         // --- Process Users & Create a map for easy lookup ---
@@ -106,6 +108,7 @@ export default function AdminDashboardPage() {
         const totalProducts = productsSnapshot.size;
         const outOfStockProducts = productsSnapshot.docs.filter(doc => (doc.data() as Product).stock === 0).length;
         const activeServices = servicesSnapshot.docs.filter(doc => (doc.data() as Service).status === 'Active').length;
+        const totalOrders = ordersSnapshot.size;
         
         // --- Fetch ALL appointments from all users ---
         let allAppointments: AppointmentType[] = [];
@@ -132,6 +135,7 @@ export default function AdminDashboardPage() {
           totalAppointments,
           pendingAppointments,
           totalRevenue,
+          totalOrders,
         });
 
         // --- DERIVE and Enrich RECENT APPOINTMENTS from allAppointments ---
@@ -189,6 +193,7 @@ export default function AdminDashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Link href="/admin/appointments"><StatCard title="Total Revenue" value={`₹${stats.totalRevenue.toFixed(2)}`} icon={DollarSign} isLoading={isLoading} /></Link>
         <Link href="/admin/users"><StatCard title="Total Users" value={stats.userCount} icon={Users} isLoading={isLoading} /></Link>
+        <Link href="/admin/orders"><StatCard title="Total Orders" value={stats.totalOrders} icon={ShoppingCart} isLoading={isLoading} /></Link>
         <Link href="/admin/appointments"><StatCard title="Total Appointments" value={stats.totalAppointments} icon={ListChecks} isLoading={isLoading} /></Link>
         <Link href="/admin/appointments"><StatCard title="Pending Appointments" value={stats.pendingAppointments} icon={Activity} isLoading={isLoading} /></Link>
         <Link href="/admin/products"><StatCard title="Total Products" value={stats.totalProducts} icon={Package} isLoading={isLoading} /></Link>

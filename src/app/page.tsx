@@ -128,9 +128,11 @@ export default function HomePage() {
 
   const renderProductCard = (product: Product) => {
     const rating = getRatingInfo(product.features);
-    const capacityAndRating = `${product.capacity}${rating ? ` - ${rating}` : ''}`;
     const categoryInfo = getCategoryInfo(product);
     const hasDiscount = product.discountPercentage && product.discountPercentage > 0;
+    
+    // Combine details into a single title string, filtering out empty values.
+    const productTitle = [product.brand, product.capacity, rating, categoryInfo].filter(Boolean).join(' ');
 
     return (
       <div className="h-full">
@@ -144,7 +146,7 @@ export default function HomePage() {
             <Link href={`/products/${product.id}`}>
               <Image 
                 src={product.imageUrls?.[0] || 'https://placehold.co/400x300.png'}
-                alt={`${product.brand} ${product.model}`}
+                alt={productTitle}
                 width={400}
                 height={300}
                 className="object-cover w-full h-72"
@@ -152,9 +154,8 @@ export default function HomePage() {
             </Link>
           </CardHeader>
           <CardContent className="p-4 flex-grow flex flex-col items-center text-center">
-            <CardTitle className="font-headline text-lg mb-1">{product.brand} {product.model}</CardTitle>
-            <p className="text-sm font-medium text-muted-foreground">{capacityAndRating}</p>
-            <p className="text-sm text-primary font-semibold mt-1 capitalize">{categoryInfo}</p>
+            <CardTitle className="font-headline text-lg mb-1">{productTitle}</CardTitle>
+            {/* The capacity/rating and category lines are now combined into the title above. */}
             <div className="flex-grow" />
           </CardContent>
           <CardFooter className="p-4 pt-0 flex justify-center">

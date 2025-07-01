@@ -46,7 +46,6 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <QuickLinkItem href="/products">Products</QuickLinkItem>
               <QuickLinkItem href="/services">Services</QuickLinkItem>
-              <QuickLinkItem href="/offers">Offers</QuickLinkItem>
               <QuickLinkItem href="/media">Media</QuickLinkItem>
               <QuickLinkItem href="/locate-store">Locate Store</QuickLinkItem>
             </ul>

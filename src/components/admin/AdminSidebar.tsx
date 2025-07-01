@@ -16,7 +16,6 @@ const adminNavItems = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/services', label: 'Services', icon: Wrench },
-  { href: '/admin/offers', label: 'Offers', icon: Tag },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];

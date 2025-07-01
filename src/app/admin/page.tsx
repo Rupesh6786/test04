@@ -23,7 +23,7 @@ import {
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, Timestamp, FirestoreError, where } from 'firebase/firestore';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Appointment as AppointmentType, User as UserType, Product, Service, Offer } from '@/types'; 
+import type { Appointment as AppointmentType, User as UserType, Product, Service } from '@/types'; 
 import { formatDistanceToNow } from 'date-fns';
 
 // Local type for enriched recent appointments
@@ -45,7 +45,6 @@ export default function AdminDashboardPage() {
     totalProducts: 0,
     outOfStockProducts: 0,
     activeServices: 0,
-    activeOffers: 0,
   });
   
   // Unified state for data fetching
@@ -86,10 +85,9 @@ export default function AdminDashboardPage() {
         const usersQuery = getDocs(collection(db, 'users'));
         const productsQuery = getDocs(collection(db, 'products'));
         const servicesQuery = getDocs(collection(db, 'services'));
-        const offersQuery = getDocs(query(collection(db, 'offers'), where('status', '==', 'Active')));
 
-        const [usersSnapshot, productsSnapshot, servicesSnapshot, offersSnapshot] = await Promise.all([
-          usersQuery, productsQuery, servicesQuery, offersQuery
+        const [usersSnapshot, productsSnapshot, servicesSnapshot] = await Promise.all([
+          usersQuery, productsQuery, servicesQuery
         ]);
 
         // --- Process Users & Create a map for easy lookup ---
@@ -108,7 +106,6 @@ export default function AdminDashboardPage() {
         const totalProducts = productsSnapshot.size;
         const outOfStockProducts = productsSnapshot.docs.filter(doc => (doc.data() as Product).stock === 0).length;
         const activeServices = servicesSnapshot.docs.filter(doc => (doc.data() as Service).status === 'Active').length;
-        const activeOffersCount = offersSnapshot.size;
         
         // --- Fetch ALL appointments from all users ---
         let allAppointments: AppointmentType[] = [];
@@ -135,7 +132,6 @@ export default function AdminDashboardPage() {
           totalAppointments,
           pendingAppointments,
           totalRevenue,
-          activeOffers: activeOffersCount,
         });
 
         // --- DERIVE and Enrich RECENT APPOINTMENTS from allAppointments ---
@@ -198,7 +194,6 @@ export default function AdminDashboardPage() {
         <Link href="/admin/products"><StatCard title="Total Products" value={stats.totalProducts} icon={Package} isLoading={isLoading} /></Link>
         <Link href="/admin/products"><StatCard title="Out of Stock" value={stats.outOfStockProducts} icon={PackageX} isLoading={isLoading} /></Link>
         <Link href="/admin/services"><StatCard title="Active Services" value={stats.activeServices} icon={Wrench} isLoading={isLoading} /></Link>
-        <Link href="/admin/offers"><StatCard title="Active Offers" value={stats.activeOffers} icon={Tag} isLoading={isLoading} /></Link>
       </div>
 
       {/* --- RECENT ACTIVITY --- */}

@@ -34,19 +34,6 @@ export interface Service {
   updatedAt?: Timestamp | Date;
 }
 
-export interface Offer {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-  aiHint?: string;
-  status: 'Active' | 'Inactive';
-  ctaText: string;
-  ctaLink: string;
-  createdAt?: Timestamp | Date;
-  updatedAt?: Timestamp | Date;
-}
-
 export interface Enquiry {
   id: string;
   name: string;

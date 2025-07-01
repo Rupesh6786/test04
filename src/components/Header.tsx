@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { AirVent, Menu, X } from 'lucide-react';
+import { AirVent, Menu, X, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -12,9 +12,9 @@ const navItems = [
   { href: '/', label: 'Home' },
   { href: '/products', label: 'Products' },
   { href: '/services', label: 'Services' },
-  { href: '/offers', label: 'Offers' },
   { href: '/media', label: 'Media' },
   { href: '/about', label: 'About Us' },
+  { href: '/contact', label: 'Contact Us' },
   { href: '/locate-store', label: 'Locate a Store' },
 ];
 

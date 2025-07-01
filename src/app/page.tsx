@@ -253,7 +253,7 @@ export default function HomePage() {
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Skeleton className="h-96 w-full rounded-lg" />
               <Skeleton className="h-96 w-full rounded-lg" />
               <Skeleton className="h-96 w-full rounded-lg" />
@@ -261,7 +261,7 @@ export default function HomePage() {
           ) : featuredProducts.length > 0 ? (
              <>
               {/* Desktop View: Static Grid of 3 */}
-              <div className="hidden lg:grid grid-cols-3 gap-8">
+              <div className="hidden lg:grid grid-cols-3 gap-6">
                 {featuredProducts.slice(0, 3).map(product => (
                   <div key={product.id}>
                     {renderProductCard(product)}

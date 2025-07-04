@@ -38,13 +38,13 @@ export async function POST(request: NextRequest) {
     
     // Check for common storage errors
     if (errorMessage.includes('storage/unauthorized')) {
-      return NextResponse.json({ success: false, error: 'Permission denied. Please check your Firebase Storage security rules in the console and in README.md.' }, { status: 403 });
+      return NextResponse.json({ success: false, error: "Permission denied. This is a Firebase Storage Rules issue. Please see the instructions in the README.md file." }, { status: 403 });
     }
     if (errorMessage.includes('storage/object-not-found')) {
          return NextResponse.json({ success: false, error: 'Storage object not found. The bucket might not exist.' }, { status: 404 });
     }
     if (errorMessage.includes('storage/unknown')) {
-      return NextResponse.json({ success: false, error: "An unknown error occurred. This is often a CORS issue. Please see the 'README.md' file for instructions on how to configure CORS for your Firebase Storage bucket." }, { status: 500 });
+      return NextResponse.json({ success: false, error: "CORS configuration error. The 'storage/unknown' error is almost always caused by missing CORS settings on your Firebase Storage bucket. Please follow the specific instructions in README.md to fix this." }, { status: 500 });
     }
 
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });

@@ -35,13 +35,18 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error uploading to Firebase Storage:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to upload file due to an unknown error.';
+    
     // Check for common storage errors
     if (errorMessage.includes('storage/unauthorized')) {
-      return NextResponse.json({ success: false, error: 'Permission denied. Check your Firebase Storage security rules.' }, { status: 403 });
+      return NextResponse.json({ success: false, error: 'Permission denied. Please check your Firebase Storage security rules in the console and in README.md.' }, { status: 403 });
     }
     if (errorMessage.includes('storage/object-not-found')) {
          return NextResponse.json({ success: false, error: 'Storage object not found. The bucket might not exist.' }, { status: 404 });
     }
+    if (errorMessage.includes('storage/unknown')) {
+      return NextResponse.json({ success: false, error: "An unknown error occurred. This is often a CORS issue. Please see the 'README.md' file for instructions on how to configure CORS for your Firebase Storage bucket." }, { status: 500 });
+    }
+
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }

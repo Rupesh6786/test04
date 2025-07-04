@@ -15,9 +15,11 @@ These two services have **separate security rules** that must be configured inde
 
 ### Fixing File Upload Errors
 
-If you encounter "Permission Denied" or "Unknown" errors when uploading images in the admin panel, it is almost always an issue with your **Firebase Storage security rules**.
+If you encounter "Permission Denied" or "Unknown" errors when uploading images in the admin panel, it is almost always an issue with your Firebase Storage configuration. Please follow these two steps.
 
-Please navigate to your **Firebase Console -> Storage -> Rules** tab and update the rules to the following to allow authenticated users to upload files:
+#### Step 1: Update Storage Security Rules
+
+Navigate to your **Firebase Console -> Storage -> Rules** tab and update the rules to the following to allow authenticated users to upload files:
 
 ```
 rules_version = '2';
@@ -32,8 +34,36 @@ service firebase.storage {
   }
 }
 ```
+After pasting these rules, click **Publish**. The changes may take a minute to take effect.
 
-After pasting these rules, click **Publish**. The changes may take a minute to take effect. Your file uploads should now work correctly.
+#### Step 2: Configure Storage CORS (Very Important for 'Unknown' Error)
+
+The `storage/unknown` error is often caused by missing CORS configuration, which allows your website to talk to your storage bucket.
+
+1.  You will need the `gsutil` command-line tool. If you don't have it, follow the [Google Cloud SDK installation guide](https://cloud.google.com/sdk/docs/install).
+2.  Create a file named `cors.json` on your computer with the following content:
+    ```json
+    [
+      {
+        "origin": ["*"],
+        "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+        "responseHeader": [
+          "Content-Type",
+          "Access-Control-Allow-Origin"
+        ],
+        "maxAgeSeconds": 3600
+      }
+    ]
+    ```
+    *Note: Using `"*"` for origin is convenient for development but for production, you should replace it with your app's domain (e.g., `https://your-app-name.web.app`).*
+3.  Find your Storage bucket URL in the **Firebase Console -> Storage**. It will look like `gs://your-project-id.appspot.com`.
+4.  Run the following command in your terminal, replacing `YOUR_BUCKET_URL` with your actual bucket URL:
+    ```bash
+    gsutil cors set cors.json YOUR_BUCKET_URL
+    ```
+    Example: `gsutil cors set cors.json gs://classic-solution-d7a01.appspot.com`
+
+After completing both steps, your file uploads should work correctly.
 
 ### Firestore Rules
 

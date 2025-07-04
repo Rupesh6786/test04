@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const uniqueFilename = `${Date.now()}_${sanitizedFilename}`;
   
   // Define the upload directory within the public folder
-  const uploadDir = path.join(process.cwd(), 'public/uploads');
+  const uploadDir = path.join(process.cwd(), 'public/img');
 
   // Define the full path for the file
   const filePath = path.join(uploadDir, uniqueFilename);
@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
     // Ensure the upload directory exists
     await mkdir(uploadDir, { recursive: true });
     
-    // Write the file to the public/uploads directory
+    // Write the file to the public/img directory
     await writeFile(filePath, buffer);
 
     // Return the public path to the file
-    const publicPath = `/uploads/${uniqueFilename}`;
+    const publicPath = `/img/${uniqueFilename}`;
     return NextResponse.json({ success: true, path: publicPath });
 
   } catch (error) {

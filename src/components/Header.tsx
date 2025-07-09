@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -59,7 +58,8 @@ export function Header() {
             <ThemeToggle />
           </div>
 
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={toggleMobileMenu} aria-label="Toggle menu">
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </Button>
@@ -92,9 +92,6 @@ export function Header() {
             ) : (
               <Button onClick={() => { openAuthModal('login'); toggleMobileMenu(); }} className="w-full">Login</Button>
             )}
-            <div className="pt-4">
-              <ThemeToggle />
-            </div>
           </div>
         </nav>
       </div>

@@ -8,6 +8,7 @@ import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { usePathname } from 'next/navigation'; 
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 
 export default function RootLayout({
@@ -19,7 +20,7 @@ export default function RootLayout({
   const isAdminRoute = pathname.startsWith('/admin');
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <title>Classic-Solution - AC Sales and Services</title>
         <meta name="description" content="Your one-stop solution for second-hand ACs and reliable services." />
@@ -28,12 +29,19 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased flex flex-col min-h-screen">
-        <AuthProvider>
-          {!isAdminRoute && <Header />}
-          <main className="flex-grow">{children}</main>
-          {!isAdminRoute && <Footer />}
-          <Toaster />
-        </AuthProvider>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+          <AuthProvider>
+            {!isAdminRoute && <Header />}
+            <main className="flex-grow">{children}</main>
+            {!isAdminRoute && <Footer />}
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

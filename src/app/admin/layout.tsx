@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { Loader2, Menu as MenuIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function AdminDashboardLayout({ children }: { children: ReactNode }) {
   const { currentUser, isAdmin, loading } = useAuth();
@@ -47,18 +48,21 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
       />
       <div className="flex flex-col flex-1">
         
-        <header className="sticky top-0 z-30 flex items-center justify-between md:hidden h-16 px-4 border-b bg-card">
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="md:hidden mr-2"
-              aria-label="Open sidebar"
-            >
-              <MenuIcon className="h-6 w-6" />
-            </Button>
-            <h1 className="text-lg font-semibold text-primary">Admin Panel</h1>
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-card px-4 sm:px-6">
+          <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="md:hidden"
+                aria-label="Open sidebar"
+              >
+                <MenuIcon className="h-6 w-6" />
+              </Button>
+          </div>
+
+          <div className="flex items-center gap-4">
+             <ThemeToggle />
           </div>
         </header>
         

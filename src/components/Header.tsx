@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from './ThemeToggle';
+import { Separator } from './ui/separator';
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -54,6 +56,7 @@ export function Header() {
             ) : (
               <Button onClick={() => openAuthModal('login')}>Login</Button>
             )}
+            <ThemeToggle />
           </div>
 
           <div className="md:hidden flex items-center">
@@ -77,6 +80,7 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <Separator className="w-1/2"/>
           <div className="flex flex-col items-center space-y-3 pt-4 w-full">
              {isLoggedIn ? (
               <>
@@ -88,6 +92,9 @@ export function Header() {
             ) : (
               <Button onClick={() => { openAuthModal('login'); toggleMobileMenu(); }} className="w-full">Login</Button>
             )}
+            <div className="pt-4">
+              <ThemeToggle />
+            </div>
           </div>
         </nav>
       </div>

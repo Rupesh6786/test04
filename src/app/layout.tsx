@@ -1,4 +1,3 @@
-
 "use client"; 
 
 import type { Metadata } from 'next';
@@ -9,20 +8,32 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { usePathname, useSelectedLayoutSegment } from 'next/navigation'; 
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { useEffect, useState } from 'react';
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const segment = useSelectedLayoutSegment();
-  
+
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Determine if the route is an admin route
   const isAdminRoute = pathname.startsWith('/admin');
-  // `segment` will be `(not-found)` for the 404 page.
+  
+  // Determine if the route is the not-found page.
+  // The segment will be null on initial load and then `(not-found)` on client-side navigation.
+  // On a direct server render of a 404, we need another way, but for client-side this is key.
+  // For the `not-found.tsx` to render, Next.js provides it as a child. 
+  // We can key off the `segment` being `(not-found)`.
   const isNotFound = segment === '(not-found)';
 
   return (
     <>
-      {!isAdminRoute && !isNotFound && <Header />}
+      {isClient && !isAdminRoute && !isNotFound && <Header />}
       <main className="flex-grow">{children}</main>
-      {!isAdminRoute && !isNotFound && <Footer />}
+      {isClient && !isAdminRoute && !isNotFound && <Footer />}
       <Toaster />
     </>
   );

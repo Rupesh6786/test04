@@ -6,3 +6,17 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
 
+# Automatically configure Storage CORS to allow uploads from your app.
+storage:
+  cors:
+    - origin: '*' # Allows all origins. For production, restrict this to your domain.
+      method:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - HEAD
+      responseHeader:
+        - Content-Type
+        - Access-Control-Allow-Origin
+      maxAgeSeconds: 3600

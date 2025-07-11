@@ -140,7 +140,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
           setShowResetForm(false);
         }
     }}>
-      <DialogContent className="sm:max-w-[425px] max-h-[90svh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

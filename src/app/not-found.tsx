@@ -3,20 +3,19 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Frown, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function NotFoundPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] bg-background text-center px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        <div className="flex justify-center items-center mb-6">
-            <Frown className="h-24 w-24 text-primary" strokeWidth={1.5} />
-            <span className="text-9xl font-bold text-foreground -ml-4 -mr-2 z-10">4</span>
-            <Frown className="h-24 w-24 text-primary transform -scale-x-100" strokeWidth={1.5}/>
-            <span className="text-9xl font-bold text-foreground -ml-4 z-10">4</span>
+        <div className="text-[10rem] font-bold text-primary leading-none -mt-8">
+            <span className="opacity-50">4</span>
+            <span className="mx-[-0.2em]">0</span>
+            <span className="opacity-50">4</span>
         </div>
         
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mt-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground -mt-8">
           Page Not Found
         </h1>
         

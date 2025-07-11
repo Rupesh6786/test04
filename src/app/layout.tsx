@@ -7,18 +7,32 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { usePathname } from 'next/navigation'; 
+import { usePathname, useSelectedLayoutSegment } from 'next/navigation'; 
 import { ThemeProvider } from '@/components/ThemeProvider';
 
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const segment = useSelectedLayoutSegment();
+  
+  const isAdminRoute = pathname.startsWith('/admin');
+  // `segment` will be `(not-found)` for the 404 page.
+  const isNotFound = segment === '(not-found)';
+
+  return (
+    <>
+      {!isAdminRoute && !isNotFound && <Header />}
+      <main className="flex-grow">{children}</main>
+      {!isAdminRoute && !isNotFound && <Footer />}
+      <Toaster />
+    </>
+  );
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isAdminRoute = pathname.startsWith('/admin');
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -36,10 +50,7 @@ export default function RootLayout({
             disableTransitionOnChange
         >
           <AuthProvider>
-            {!isAdminRoute && <Header />}
-            <main className="flex-grow">{children}</main>
-            {!isAdminRoute && <Footer />}
-            <Toaster />
+            <LayoutContent>{children}</LayoutContent>
           </AuthProvider>
         </ThemeProvider>
       </body>

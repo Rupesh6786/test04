@@ -13,6 +13,7 @@ import {
   signInWithPopup,
   updateProfile,
   sendEmailVerification,
+  sendPasswordResetEmail,
   type AuthError
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, Timestamp } from "firebase/firestore"; // Firestore imports
@@ -30,6 +31,7 @@ interface AuthContextType {
   registerUser: (email: string, pass: string, name?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
   showAuthModal: boolean;
   openAuthModal: (initialView?: 'login' | 'register') => void;
   closeAuthModal: () => void;
@@ -281,6 +283,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const sendPasswordReset = async (email: string) => {
+    try {
+        await sendPasswordResetEmail(auth, email);
+        toast({ title: 'Password Reset Email Sent', description: 'Please check your inbox for a link to reset your password.' });
+    } catch (error) {
+        const authError = error as AuthError;
+        let description = 'An unknown error occurred. Please try again.';
+        if (authError.code === 'auth/user-not-found') {
+            description = 'No user found with this email address.';
+        }
+        toast({ title: 'Password Reset Failed', description, variant: 'destructive'});
+        throw authError;
+    }
+  };
+
   const openAuthModal = (initialView: 'login' | 'register' = 'login') => {
     setAuthModalView(initialView);
     setShowAuthModal(true);
@@ -297,6 +314,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       registerUser, 
       signInWithGoogle,
       logout, 
+      sendPasswordReset,
       showAuthModal, 
       openAuthModal, 
       closeAuthModal, 
@@ -315,4 +333,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-    

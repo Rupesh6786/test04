@@ -37,9 +37,10 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, initialView = 'login' }: AuthModalProps) {
-  const { loginUser, registerUser, signInWithGoogle } = useAuth();
+  const { loginUser, registerUser, signInWithGoogle, sendPasswordReset } = useAuth();
   const { toast } = useToast();
   const [currentView, setCurrentView] = useState<'login' | 'register'>(initialView);
+  const [showResetForm, setShowResetForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLoginSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -57,9 +58,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
 
     try {
       await loginUser(email, password);
-      // AuthContext handles success toast and closing modal
     } catch (error) {
-      // AuthContext handles error toast
       console.error('Login submission error:', error);
     } finally {
       setIsSubmitting(false);
@@ -89,9 +88,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
 
     try {
       await registerUser(email, password, name);
-      // AuthContext handles success toast and potentially closing modal
     } catch (error) {
-      // AuthContext handles error toast
       console.error('Registration submission error:', error);
     } finally {
       setIsSubmitting(false);
@@ -102,72 +99,114 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     setIsSubmitting(true);
     try {
       await signInWithGoogle();
-      // AuthContext handles success toast and closing modal
     } catch (error) {
-      // AuthContext handles error toast
       console.error('Google Sign-In submission error:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handlePasswordResetSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('reset-email') as string;
+
+    if (!email) {
+      toast({ title: "Email Required", description: "Please enter your email address.", variant: "destructive"});
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+        await sendPasswordReset(email);
+        setShowResetForm(false); // Go back to login form after sending
+    } catch (error) {
+        console.error('Password reset submission error:', error);
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
+  const title = showResetForm ? 'Reset Password' : (currentView === 'login' ? 'Login' : 'Register');
+  const description = showResetForm 
+    ? "Enter your email to receive a password reset link."
+    : (currentView === 'login' ? "Access your account to manage bookings and view offers." : "Create an account to get started.");
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) {
+          onClose();
+          setShowResetForm(false);
+        }
+    }}>
       <DialogContent className="sm:max-w-[425px] max-h-[90svh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{currentView === 'login' ? 'Login' : 'Register'}</DialogTitle>
-          <DialogDescription>
-            {currentView === 'login'
-              ? "Access your account to manage bookings and view offers."
-              : "Create an account to get started with Classic-Solution."}
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         
-        <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as 'login' | 'register')} className="w-full pt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login with Email</TabsTrigger>
-            <TabsTrigger value="register">Register with Email</TabsTrigger>
-          </TabsList>
-          <TabsContent value="login">
-            <form onSubmit={handleLoginSubmit} className="space-y-4 py-4">
+        {showResetForm ? (
+             <form onSubmit={handlePasswordResetSubmit} className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
-                <Input id="login-email" name="email" type="email" placeholder="m@example.com" required disabled={isSubmitting} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="login-password">Password</Label>
-                <Input id="login-password" name="password" type="password" required disabled={isSubmitting} />
+                <Label htmlFor="reset-email">Email</Label>
+                <Input id="reset-email" name="reset-email" type="email" placeholder="m@example.com" required disabled={isSubmitting} />
               </div>
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Logging in...' : 'Login'}
+                {isSubmitting ? 'Sending...' : 'Send Reset Link'}
               </Button>
             </form>
-          </TabsContent>
-          <TabsContent value="register">
-            <form onSubmit={handleRegisterSubmit} className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="register-name">Full Name</Label>
-                <Input id="register-name" name="name" placeholder="Your Name" required disabled={isSubmitting} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="register-email">Email</Label>
-                <Input id="register-email" name="email" type="email" placeholder="m@example.com" required disabled={isSubmitting} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="register-password">Password</Label>
-                <Input id="register-password" name="password" type="password" required disabled={isSubmitting} />
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="register-confirm-password">Confirm Password</Label>
-                <Input id="register-confirm-password" name="confirmPassword" type="password" required disabled={isSubmitting} />
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Registering...' : 'Register Now'}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+        ) : (
+          <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as 'login' | 'register')} className="w-full pt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login with Email</TabsTrigger>
+              <TabsTrigger value="register">Register with Email</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+              <form onSubmit={handleLoginSubmit} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input id="login-email" name="email" type="email" placeholder="m@example.com" required disabled={isSubmitting} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <Input id="login-password" name="password" type="password" required disabled={isSubmitting} />
+                </div>
+                 <div className="text-right">
+                    <Button type="button" variant="link" className="p-0 h-auto text-sm" onClick={() => setShowResetForm(true)}>
+                      Forgot Password?
+                    </Button>
+                </div>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Logging in...' : 'Login'}
+                </Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="register">
+              <form onSubmit={handleRegisterSubmit} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="register-name">Full Name</Label>
+                  <Input id="register-name" name="name" placeholder="Your Name" required disabled={isSubmitting} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <Input id="register-email" name="email" type="email" placeholder="m@example.com" required disabled={isSubmitting} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Password</Label>
+                  <Input id="register-password" name="password" type="password" required disabled={isSubmitting} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                  <Input id="register-confirm-password" name="confirmPassword" type="password" required disabled={isSubmitting} />
+                </div>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Registering...' : 'Register Now'}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        )}
 
         <div className="relative py-2">
           <Separator />
@@ -192,15 +231,21 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
         </Button>
 
         <DialogFooter className="sm:justify-start pt-4">
-          {currentView === 'login' && (
+          {showResetForm ? (
+            <p className="text-sm text-muted-foreground">
+                Remembered your password?{' '}
+                <Button variant="link" className="p-0 h-auto" onClick={() => setShowResetForm(false)} disabled={isSubmitting}>
+                    Back to Login
+                </Button>
+            </p>
+          ) : currentView === 'login' ? (
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
               <Button variant="link" className="p-0 h-auto" onClick={() => setCurrentView('register')} disabled={isSubmitting}>
                 Register Now
               </Button>
             </p>
-          )}
-          {currentView === 'register' && (
+          ) : (
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
               <Button variant="link" className="p-0 h-auto" onClick={() => setCurrentView('login')} disabled={isSubmitting}>
@@ -213,5 +258,3 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     </Dialog>
   );
 }
-
-    

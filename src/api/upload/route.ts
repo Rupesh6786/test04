@@ -1,7 +1,6 @@
-
 import { NextRequest, NextResponse } from 'next/server';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 export async function POST(request: NextRequest) {
   const data = await request.formData();
@@ -15,39 +14,28 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create a unique filename for the uploaded file
-    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const uniqueFilename = `product-images/${Date.now()}_${sanitizedFilename}`;
+    // Define the path to the public/img directory
+    const uploadDir = join(process.cwd(), 'public', 'img');
 
-    // Create a reference to the file in Firebase Storage
-    const storageRef = ref(storage, uniqueFilename);
+    // Ensure the upload directory exists
+    await mkdir(uploadDir, { recursive: true });
 
-    // Upload the file
-    const snapshot = await uploadBytes(storageRef, buffer, {
-      contentType: file.type,
-    });
+    // Create a unique filename to prevent overwriting
+    const uniqueFilename = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+    const filePath = join(uploadDir, uniqueFilename);
 
-    // Get the public URL of the uploaded file
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    // Write the file to the local filesystem
+    await writeFile(filePath, buffer);
 
-    // Return the URL
-    return NextResponse.json({ success: true, path: downloadURL });
+    // The public path to be stored in the database
+    const publicPath = `/img/${uniqueFilename}`;
+
+    // Return the public path
+    return NextResponse.json({ success: true, path: publicPath });
 
   } catch (error) {
-    console.error('Error uploading to Firebase Storage:', error);
+    console.error('Error uploading to local filesystem:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to upload file due to an unknown error.';
-    
-    // Check for common storage errors and provide more specific feedback
-    if (errorMessage.includes('storage/unauthorized')) {
-      return NextResponse.json({ success: false, error: 'Permission Denied. Check your Firebase Storage security rules in the Firebase Console.' }, { status: 403 });
-    }
-    if (errorMessage.includes('storage/object-not-found')) {
-         return NextResponse.json({ success: false, error: 'Storage object not found. The bucket might not exist or is misconfigured.' }, { status: 404 });
-    }
-    if (errorMessage.includes('storage/unknown')) {
-      return NextResponse.json({ success: false, error: "CORS configuration error in Firebase Storage. This is a common issue. Please follow the instructions in the project's README.md file to fix it." }, { status: 500 });
-    }
-    
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }

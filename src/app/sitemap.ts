@@ -5,7 +5,7 @@ import { db } from '@/lib/firebase';
 import type { Product } from '@/types';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://ac-solution.com'; // Replace with your actual domain
+  const baseUrl = 'https://classicsolution.shop'; // Replace with your actual domain
 
   // Get all products for dynamic routes
   const productsSnapshot = await getDocs(collection(db, 'products'));

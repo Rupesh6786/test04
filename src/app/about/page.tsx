@@ -1,9 +1,16 @@
 
+
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, FileText, Phone, Truck, RotateCcw, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Classic-Solution | 16+ Years of AC Service Excellence',
+  description: 'Learn about Classic-Solution, your trusted partner for affordable and reliable AC sales and services in Mumbai for over 16 years. Our mission is your comfort.',
+};
 
 const policyLinks = [
   { href: '/contact', title: 'Contact Us', description: 'Get in touch with our team.', icon: Phone },
@@ -70,3 +77,5 @@ export default function AboutUsPage() {
     </div>
   );
 }
+
+    

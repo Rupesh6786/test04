@@ -1,8 +1,16 @@
 
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContactForm } from '@/components/ContactForm';
 import { Mail, MapPin, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact Us | Classic-Solution AC Services',
+  description: 'Get in touch with Classic-Solution for AC sales, service inquiries, or support. Find our address, phone number, and email, or send us a message directly.',
+};
+
 
 export default function ContactUsPage() {
     const storeAddress = "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E), Mumbai-400068";
@@ -62,3 +70,5 @@ export default function ContactUsPage() {
     </div>
   );
 }
+
+    

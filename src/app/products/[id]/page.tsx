@@ -15,13 +15,12 @@ import { Tag, ShieldCheck, CircleDollarSign, CheckCircle, Settings, Star, Packag
 import Link from 'next/link';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent } from '@/components/ui/card';
 import { CardDescription } from '@/components/ui/card';
 import Autoplay from "embla-carousel-autoplay";
 import { useAuth } from '@/contexts/AuthContext';
-
 
 export default function ProductDetailPage() {
   const params = useParams();

@@ -116,4 +116,5 @@ export interface User {
   createdAt?: Timestamp | Date | string; // Firestore timestamp, can be Date after fetch, or string for display
   provider?: string; // e.g., 'google.com', 'email/password'
   accountStatus?: 'active' | 'suspended' | 'deactivated';
+  isAdmin?: boolean;
 }

@@ -20,9 +20,6 @@ import { doc, setDoc, getDoc, serverTimestamp, updateDoc, Timestamp } from "fire
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
 
-// IMPORTANT: Add your new admin's UID to this list.
-const ADMIN_UIDS = ["2A71uIHMVPXVcp4zSCSoxxir8Bl1", "YOUR_NEW_ADMIN_UID_HERE"]; 
-
 interface AuthContextType {
   currentUser: User | null;
   isLoggedIn: boolean;
@@ -54,35 +51,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && user.emailVerified) { // Only consider user logged in if email is verified
+      if (user && user.emailVerified) {
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
+        const userData = userDoc.data();
 
-        if (userDoc.exists() && (userDoc.data().accountStatus === 'suspended' || userDoc.data().accountStatus === 'deactivated')) {
-          // If account is suspended or deactivated, treat user as logged out
+        if (userDoc.exists() && (userData?.accountStatus === 'suspended' || userData?.accountStatus === 'deactivated')) {
           setCurrentUser(null);
           setIsLoggedIn(false);
           setIsAdmin(false);
           await firebaseSignOut(auth);
         } else {
-          // Account is active, determine if admin
-          const currentIsAdmin = ADMIN_UIDS.includes(user.uid);
+          // Check for admin status from Firestore document
+          const currentIsAdmin = userData?.isAdmin === true;
           
-          // Set state
           setCurrentUser(user);
           setIsLoggedIn(true);
           setIsAdmin(currentIsAdmin);
           
-          // ** NEW **: Global redirect for admins.
-          // If the user is an admin and they are not on an admin page, redirect them.
           if (currentIsAdmin && !pathname.startsWith('/admin')) {
             router.push('/admin');
           }
         }
       } else {
-        // No user logged in or email not verified
         if (user && !user.emailVerified) {
-          // Keep user object for potential re-verification, but don't consider them logged in
           setCurrentUser(user);
         } else {
           setCurrentUser(null);
@@ -93,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [pathname, router]); // Dependency array ensures this runs on route changes
+  }, [pathname, router]);
 
   const checkUserStatus = async (user: User): Promise<boolean> => {
     const userDocRef = doc(db, "users", user.uid);
@@ -112,7 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        await firebaseSignOut(auth); // Sign out user immediately
+        await firebaseSignOut(auth);
         toast({
           title: 'Verification Required',
           description: 'Please check your inbox and verify your email address before logging in.',
@@ -129,13 +121,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       toast({ title: 'Login Successful', description: 'Welcome back!' });
       closeAuthModal();
-      // The onAuthStateChanged effect will handle the redirect now, making this redundant but harmless as a fallback.
-      if (user && ADMIN_UIDS.includes(user.uid)) {
+      
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists() && userDoc.data().isAdmin === true) {
         router.push('/admin');
       }
+
     } catch (error) {
        if ((error as Error).message === 'Email not verified' || (error as Error).message === 'Account not active') {
-        return; // Don't show a generic error toast for these cases.
+        return;
       }
 
       const authError = error as AuthError;
@@ -187,6 +182,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             createdAt: serverTimestamp(),
             provider: "email/password",
             accountStatus: "active",
+            isAdmin: false, // Default to not being an admin
           });
         } catch (firestoreError) {
           console.error(`AuthContext: Firestore error creating document for user ${user.uid}:`, firestoreError);
@@ -196,10 +192,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: 'Registration Successful!',
         description: 'A verification link has been sent to your email. Please verify your account before logging in.',
-        duration: 9000 // Show for longer
+        duration: 9000
       });
       closeAuthModal();
-      await firebaseSignOut(auth); // Sign out user until they verify
+      await firebaseSignOut(auth);
     } catch (error) {
       const authError = error as AuthError;
       console.error("AuthContext: Firebase registration error:", authError.code, authError.message);
@@ -225,6 +221,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             createdAt: serverTimestamp(),
             provider: "google.com", 
             accountStatus: 'active',
+            isAdmin: false, // Default to not being an admin
           });
           toast({ title: 'Welcome!', description: 'Your account has been created with Google.' });
         } else {
@@ -245,7 +242,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toast({ title: 'Sign-In Partially Successful', description: 'Authentication successful, but failed to save/update user profile data. Some features might be limited.', variant: 'destructive' });
       }
       closeAuthModal();
-      if (ADMIN_UIDS.includes(user.uid)) {
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists() && userDoc.data().isAdmin === true) {
         router.push('/admin');
       }
     } catch (error) {
@@ -274,7 +272,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await firebaseSignOut(auth);
       toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-      if (pathname.startsWith('/admin') || pathname === '/my-account') {
+      if (pathname.startsWith('/admin') || pathname.startsWith('/my-account')) {
         router.push('/');
       }
     } catch (error) {

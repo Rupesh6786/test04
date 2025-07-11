@@ -9,21 +9,70 @@ import { Award, Users, CircleDollarSign, CalendarCheck, Quote, Loader2, PackageS
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
 import type { Product } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProductCard } from '@/components/ProductCard';
 
+const AnimatedCounter = ({ end, duration = 2000, suffix = '' }: { end: number, duration?: number, suffix?: string }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref);
+
+  useEffect(() => {
+    if (isInView) {
+      let startTime: number;
+      const animate = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const progress = timestamp - startTime;
+        const currentCount = Math.min(Math.floor((progress / duration) * end), end);
+        setCount(currentCount);
+        if (progress < duration) {
+          requestAnimationFrame(animate);
+        }
+      };
+      requestAnimationFrame(animate);
+    }
+  }, [isInView, end, duration]);
+
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
+};
+
+const useInView = (ref: React.RefObject<Element>): boolean => {
+  const [isInView, setIsInView] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(([entry]) => {
+      setIsInView(entry.isIntersecting);
+    });
+
+    if (ref.current) {
+      observerRef.current.observe(ref.current);
+    }
+
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
+  }, [ref]);
+
+  return isInView;
+};
+
 const whyChooseUsItems = [
   {
     icon: Award,
+    titleComponent: () => <><AnimatedCounter end={16} suffix="+" /> Years Experience</>,
     title: '16+ Years Experience',
     description: 'Decades of expertise in AC sales and services, ensuring quality and reliability.',
   },
   {
     icon: Users,
+    titleComponent: () => <><AnimatedCounter end={10000} suffix="+" /> Happy Customers</>,
     title: '10,000+ Happy Customers',
     description: 'A growing family of satisfied clients who trust our products and services.',
   },
@@ -188,7 +237,9 @@ export function HomePageClient() {
                   <div className="p-4 bg-primary/10 rounded-full mb-4 group-hover:bg-primary/20 transition-colors">
                     <item.icon className="w-10 h-10 text-primary" />
                   </div>
-                  <CardTitle className="font-headline text-xl text-foreground">{item.title}</CardTitle>
+                  <CardTitle className="font-headline text-xl text-foreground">
+                    {item.titleComponent ? <item.titleComponent /> : item.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-sm">{item.description}</p>

@@ -19,6 +19,7 @@ import {
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, Timestamp } from "firebase/firestore"; // Firestore imports
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
+import { WelcomePopup } from '@/components/WelcomePopup';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -48,6 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
+
+  const [welcomeUser, setWelcomeUser] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -98,6 +101,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return true;
   }
 
+  const handleSuccessfulLogin = (user: User) => {
+    closeAuthModal();
+    setWelcomeUser(user.displayName || 'User');
+    const userDocRef = doc(db, "users", user.uid);
+    getDoc(userDocRef).then(userDoc => {
+      if (userDoc.exists() && userDoc.data().isAdmin === true) {
+        router.push('/admin');
+      }
+    });
+  };
+
   const loginUser = async (email: string, pass: string) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, pass);
@@ -119,14 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           throw new Error('Account not active');
       }
 
-      toast({ title: 'Login Successful', description: 'Welcome back!' });
-      closeAuthModal();
-      
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists() && userDoc.data().isAdmin === true) {
-        router.push('/admin');
-      }
+      handleSuccessfulLogin(user);
 
     } catch (error) {
        if ((error as Error).message === 'Email not verified' || (error as Error).message === 'Account not active') {
@@ -223,7 +230,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             accountStatus: 'active',
             isAdmin: false, // Default to not being an admin
           });
-          toast({ title: 'Welcome!', description: 'Your account has been created with Google.' });
         } else {
           if (userDocSnap.data().accountStatus === 'suspended' || userDocSnap.data().accountStatus === 'deactivated') {
               await firebaseSignOut(auth);
@@ -235,16 +241,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               photoURL: user.photoURL || userDocSnap.data()?.photoURL || null,
               lastLoginAt: serverTimestamp() 
           });
-          toast({ title: 'Google Sign-In Successful', description: 'Welcome back!' });
         }
+        handleSuccessfulLogin(user);
       } catch (firestoreError) {
         console.error(`AuthContext: Firestore error creating/updating document for Google user ${user.uid}:`, firestoreError);
         toast({ title: 'Sign-In Partially Successful', description: 'Authentication successful, but failed to save/update user profile data. Some features might be limited.', variant: 'destructive' });
-      }
-      closeAuthModal();
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists() && userDoc.data().isAdmin === true) {
-        router.push('/admin');
       }
     } catch (error) {
       const authError = error as AuthError;
@@ -321,6 +322,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }}>
       {!loading && children}
       {showAuthModal && <AuthModal isOpen={showAuthModal} onClose={closeAuthModal} initialView={authModalView} />}
+      {welcomeUser && (
+        <WelcomePopup 
+          userName={welcomeUser} 
+          onClose={() => setWelcomeUser(null)} 
+        />
+      )}
     </AuthContext.Provider>
   );
 };

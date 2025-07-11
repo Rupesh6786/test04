@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gavel, IndianRupee, Handshake, CalendarClock, ShieldAlert } from 'lucide-react';
+import { Gavel, IndianRupee, Handshake, CalendarClock, ShieldAlert, Shield } from 'lucide-react';
+import Link from 'next/link';
 
 export default function TermsAndConditionsPage() {
   return (
@@ -64,6 +65,28 @@ export default function TermsAndConditionsPage() {
                 </CardHeader>
                 <CardContent className="text-foreground/80 space-y-3">
                     <p>These Terms and Conditions shall be governed by and construed in accordance with the laws of India. Any disputes arising out of or in connection with these terms shall be subject to the exclusive jurisdiction of the courts in Mumbai, Maharashtra.</p>
+                </CardContent>
+            </Card>
+            
+            <Card>
+                <CardHeader className="flex flex-row items-center gap-4">
+                    <Shield className="w-8 h-8 text-primary"/>
+                    <CardTitle className="font-headline text-2xl">6. Privacy and Shipping Policies</CardTitle>
+                </CardHeader>
+                <CardContent className="text-foreground/80 space-y-3">
+                    <p>Your privacy is important to us. Our data handling practices are detailed in our Privacy Policy. Our product delivery and service fulfillment processes are covered by our Shipping Policy.</p>
+                    <ul className="list-disc list-inside space-y-2 pl-4">
+                        <li>
+                            <Link href="https://merchant.razorpay.com/policy/QiaxVKBcuDFX3k/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                Read our full Privacy Policy
+                            </Link>
+                        </li>
+                        <li>
+                             <Link href="https://merchant.razorpay.com/policy/QiaxVKBcuDFX3k/shipping" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                Read our full Shipping Policy
+                            </Link>
+                        </li>
+                    </ul>
                 </CardContent>
             </Card>
 

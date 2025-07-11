@@ -49,7 +49,7 @@ const productSchema = z.object({
   condition: z.enum(['New', 'Used'], { required_error: 'Condition is required.' }),
   description: z.string().min(10, { message: "Description must be at least 10 characters." }).max(1000, {message: "Description cannot exceed 1000 characters."}),
   category: z.string().min(3, { message: "Category must be at least 3 characters." }),
-  imageUrls: z.array(z.string().min(1, { message: "Image path cannot be empty." })).min(1, { message: "At least one image is required." }),
+  imageUrls: z.array(z.string().min(1, { message: "Image path cannot be empty." })).optional(),
   features: z.string().optional(),
   warranty: z.string().optional(),
   discountPercentage: z.coerce.number().int().min(0).max(99).optional().or(z.literal('')),
@@ -156,7 +156,6 @@ export function ProductFormModal({
 
   const handleAddUrl = () => {
     try {
-      // Basic check for something that looks like a URL
       if (!urlInput.startsWith('http') || !urlInput.includes('.')) {
           throw new Error("Invalid URL format.");
       }
@@ -177,7 +176,8 @@ export function ProductFormModal({
       const productData = { 
         ...data,
         discountPercentage: data.discountPercentage ? Number(data.discountPercentage) : null,
-        updatedAt: serverTimestamp() 
+        updatedAt: serverTimestamp(),
+        imageUrls: (data.imageUrls && data.imageUrls.length > 0) ? data.imageUrls : ['https://placehold.co/600x400.png']
       };
 
       if (productToEdit) {
@@ -309,7 +309,7 @@ export function ProductFormModal({
                                         {fields.map((field, index) => (
                                             <div key={field.id} className="relative group">
                                                 <Image
-                                                    src={imageUrls[index]}
+                                                    src={imageUrls?.[index] || 'https://placehold.co/150x150.png'}
                                                     alt={`Product image ${index + 1}`}
                                                     width={150}
                                                     height={150}

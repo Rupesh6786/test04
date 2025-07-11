@@ -20,7 +20,8 @@ import { doc, setDoc, getDoc, serverTimestamp, updateDoc, Timestamp } from "fire
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
 
-const ADMIN_UIDS = ["2A71uIHMVPXVcp4zSCSoxxir8Bl1"]; 
+// IMPORTANT: Add your new admin's UID to this list.
+const ADMIN_UIDS = ["2A71uIHMVPXVcp4zSCSoxxir8Bl1", "YOUR_NEW_ADMIN_UID_HERE"]; 
 
 interface AuthContextType {
   currentUser: User | null;

@@ -12,6 +12,7 @@ import {
   signOut as firebaseSignOut,
   signInWithPopup,
   updateProfile,
+  sendEmailVerification,
   type AuthError
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, Timestamp } from "firebase/firestore"; // Firestore imports
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+      if (user && user.emailVerified) { // Only consider user logged in if email is verified
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -76,8 +77,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
       } else {
-        // No user logged in
-        setCurrentUser(null);
+        // No user logged in or email not verified
+        if (user && !user.emailVerified) {
+          // Keep user object for potential re-verification, but don't consider them logged in
+          setCurrentUser(user);
+        } else {
+          setCurrentUser(null);
+        }
         setIsLoggedIn(false);
         setIsAdmin(false);
       }
@@ -101,6 +107,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, pass);
       const user = userCredential.user;
+
+      if (!user.emailVerified) {
+        await firebaseSignOut(auth); // Sign out user immediately
+        toast({
+          title: 'Verification Required',
+          description: 'Please check your inbox and verify your email address before logging in.',
+          variant: 'destructive',
+          duration: 9000
+        });
+        throw new Error('Email not verified');
+      }
       
       const isUserActive = await checkUserStatus(user);
       if (!isUserActive) {
@@ -114,7 +131,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push('/admin');
       }
     } catch (error) {
-      if ((error as Error).message === 'Account not active') return;
+       if ((error as Error).message === 'Email not verified' || (error as Error).message === 'Account not active') {
+        return; // Don't show a generic error toast for these cases.
+      }
 
       const authError = error as AuthError;
       console.error("Firebase login error:", authError.code, authError.message);
@@ -150,6 +169,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
       const user = userCredential.user;
       if (user) {
+        await sendEmailVerification(user);
+
         if (name) {
           await updateProfile(user, { displayName: name });
         }
@@ -169,8 +190,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           toast({ title: 'Account Partially Created', description: 'Authentication successful, but failed to save user profile data. Please contact support.', variant: 'destructive' });
         }
       }
-      toast({ title: 'Registration Successful', description: 'Your account has been created.' });
+      toast({
+        title: 'Registration Successful!',
+        description: 'A verification link has been sent to your email. Please verify your account before logging in.',
+        duration: 9000 // Show for longer
+      });
       closeAuthModal();
+      await firebaseSignOut(auth); // Sign out user until they verify
     } catch (error) {
       const authError = error as AuthError;
       console.error("AuthContext: Firebase registration error:", authError.code, authError.message);

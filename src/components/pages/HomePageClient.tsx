@@ -72,7 +72,7 @@ const whyChooseUsItems = [
   },
   {
     icon: Users,
-    titleComponent: () => <><AnimatedCounter end={10000} suffix="+" /> Happy Customers</>,
+    titleComponent: () => <><AnimatedCounter end={10000} duration={3000} suffix="+" /> Happy Customers</>,
     title: '10,000+ Happy Customers',
     description: 'A growing family of satisfied clients who trust our products and services.',
   },

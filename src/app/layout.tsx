@@ -10,6 +10,7 @@ import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { useEffect, useState } from 'react';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 
 // Default metadata, can be overridden by individual pages
 const defaultMetadata: Metadata = {
@@ -47,6 +48,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Classic Solution",
+    "image": "https://classicsolution.shop/hero-section.jpg",
+    "telephone": "+917991317190",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Plot No.8, Shop NO.4, Baghdadi Market, Near Krishna Hotel, Tare Compound, W.E.Highway, Dahisar Checknaka, Dahisar(E)",
+      "addressLocality": "Mumbai",
+      "addressRegion": "MH",
+      "postalCode": "400068",
+      "addressCountry": "IN"
+    },
+    "url": "https://classicsolution.shop",
+    "sameAs": [
+      "https://www.facebook.com/share/1Bka82yYBn/",
+      "https://www.instagram.com/classic_solution_official/",
+      "https://www.linkedin.com/in/gulam-mainuddin-khan-79913mk",
+      "https://x.com/GulamKh31049008"
+    ],
+    "priceRange": "₹₹",
+    "openingHours": "Mo-Sa 09:00-18:00"
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -55,6 +81,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <Script
+          id="structured-data"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </head>
       <body className="font-body antialiased flex flex-col min-h-screen">
         <ThemeProvider

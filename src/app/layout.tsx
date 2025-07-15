@@ -14,8 +14,8 @@ import Script from 'next/script';
 
 // Default metadata, can be overridden by individual pages
 const defaultMetadata: Metadata = {
-  title: 'Classic-Solution - AC Sales and Services',
-  description: 'Your one-stop solution for second-hand ACs and reliable services.',
+  title: 'Classic Solution | Used AC Sales, Repair & Installation in Mumbai',
+  description: 'Buy second-hand air conditioners in Mumbai at affordable prices. We offer expert AC servicing, installation, and reliable customer support at Classic Solution, Dahisar.',
 };
 
 function LayoutContent({ children }: { children: React.ReactNode }) {

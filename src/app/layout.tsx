@@ -69,7 +69,7 @@ export default function RootLayout({
       "https://www.linkedin.com/in/gulam-mainuddin-khan-79913mk",
       "https://x.com/GulamKh31049008"
     ],
-    "priceRange": "₹₹",
+    "priceRange": "₹500 - ₹3000",
     "openingHours": "Mo-Sa 09:00-18:00"
   };
 

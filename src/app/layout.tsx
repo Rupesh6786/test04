@@ -16,6 +16,26 @@ import Script from 'next/script';
 const defaultMetadata: Metadata = {
   title: 'Classic Solution | Used AC Sales, Repair & Installation in Mumbai',
   description: 'Buy second-hand air conditioners in Mumbai at affordable prices. We offer expert AC servicing, installation, and reliable customer support at Classic Solution, Dahisar.',
+  openGraph: {
+    title: 'Classic Solution | AC Experts in Mumbai',
+    description: 'Affordable second-hand ACs with repair and installation services across Mumbai. Visit Classic Solution in Dahisar.',
+    url: 'https://classicsolution.shop',
+    images: [
+      {
+        url: 'https://classicsolution.shop/assets/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Classic Solution AC Services',
+      },
+    ],
+    siteName: 'Classic Solution',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Classic Solution - Mumbai’s Trusted AC Experts',
+    description: 'Get affordable used ACs and expert repair/installation services. Serving Dahisar and nearby areas in Mumbai.',
+    images: ['https://classicsolution.shop/assets/twitter-image.jpg'],
+  },
 };
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
